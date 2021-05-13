@@ -1,0 +1,55 @@
+{
+  "nodes": [
+    {
+      "id": "gen-table1",
+      "value": {
+        "operation": "READ",
+        "storage": "GENERATOR",
+        "alias": "left"
+      }
+    },
+    {
+      "id": "dest-table1",
+      "value": {
+        "operation": "WRITE",
+        "storage": "sqlite",
+        "jdbcUrlOld": "jdbc:sqlite:/home/lyosha/Downloads/unknown_name.sqlite",
+        "jdbcUrl": "jdbc:sqlite:src/main/resources/test.sqlite",
+        "table": "p1",
+        "user": "user",
+        "writeMode": "overwrite",
+        "password": "password"
+      }
+    },
+    {
+      "id": "source-table1",
+      "value": {
+        "operation": "READ",
+        "storage": "sqlite",
+        "jdbcUrl": "jdbc:sqlite:src/main/resources/test.sqlite",
+        "table": "p1",
+        "user": "user",
+        "password": "password"
+      }
+    },
+    {
+      "id": "print1",
+      "value": {
+        "operation": "WRITE",
+        "storage": "STDOUT"
+      }
+    }
+
+  ],
+  "edges": [
+    {
+      "source": "gen-table1",
+      "target": "dest-table1"
+    },
+    {
+      "source": "source-table1",
+      "target": "print1"
+    }
+
+  ]
+}
