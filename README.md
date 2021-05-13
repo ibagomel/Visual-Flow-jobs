@@ -39,8 +39,7 @@ For more information on stages check [stage_fields.md](./stage_fields.md)
 [Check the official guide](./DEVELOPMENT.md).
 
 ## Contribution
-
-[Check the official guide](./CONTRIBUTING.md)
+[Check the official guide](https://github.com/ibagomel/Visual-Flow/blob/main/CONTRIBUTING.md)
 
 ## License
 Visual flow is an open-source software licensed under the [Apache-2.0 license](./LICENSE).
