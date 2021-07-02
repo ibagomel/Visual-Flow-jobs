@@ -1,4 +1,6 @@
 /*
+ * Copyright (c) 2021 IBA Group, a.s. All rights reserved.
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -110,7 +112,7 @@ object ExecutionPlanBuilder {
       StageBuilders
         .flatMap {
           case sb: StageBuilder if sb.validateAndConvert(n).isDefined => sb.validateAndConvert(n)
-          case _                                                      => None
+          case _ => None
         }
         .headOption
         .getOrElse(throw UnknownStageException(id))

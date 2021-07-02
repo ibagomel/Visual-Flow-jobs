@@ -1,4 +1,6 @@
 /*
+ * Copyright (c) 2021 IBA Group, a.s. All rights reserved.
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +27,7 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers._
 
 class ObjectStorageStageTest extends AnyFunSpec with PrivateMethodTester with MockitoSugar {
-  val m = Map(
+  val m: Map[String, String] = Map(
     "accessKey" -> "ak",
     "bucket" -> "bt",
     "format" -> "fmt",
@@ -34,7 +36,7 @@ class ObjectStorageStageTest extends AnyFunSpec with PrivateMethodTester with Mo
     "secretKey" -> "sk"
   )
   val cosNode = Node("id1", m + ("endpoint" -> "ep") + ("storage" -> "cos"))
-  val s3Node = Node("id1", m + ("storage" -> "s3"))
+  val s3Node = Node("id1", m + ("storage" -> "s3") + ("anonymousAccess" -> "false"))
 
   describe("COSConfig") {
 

@@ -1,4 +1,6 @@
 #
+# Copyright (c) 2021 IBA Group, a.s. All rights reserved.
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,26 +16,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-FROM python:3.8-slim-buster
+FROM public.ecr.aws/lambda/python:3.8
 
-ARG uid=1000
-ARG gid=1000
-ARG group=job-group
-ARG username=job-user
+COPY requirements.txt logging.conf slack_job.py /app/
 
-USER root
+RUN yum update -y && pip install -r /app/requirements.txt
 
-RUN groupadd -g ${gid} ${group} \
-    && useradd -u ${uid} -g ${gid} -m ${username}
+ENV LOGGER_CONFIG_FILE_PATH=/app/logging.conf
 
-USER ${username}
+WORKDIR /app/
 
-COPY requirements.txt logging.conf slack_job.py /home/${username}/
+ENTRYPOINT ["/bin/bash", "-c", "--"]
 
-RUN pip install -r ~/requirements.txt
-
-ENV LOGGER_CONFIG_FILE_PATH=/home/${username}/logging.conf
-
-WORKDIR /home/${username}
-
-# ENTRYPOINT ["python3", "./slack_job.py"]
+CMD ["python3 ./slack_job.py"]

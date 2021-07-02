@@ -1,4 +1,6 @@
 /*
+ * Copyright (c) 2021 IBA Group, a.s. All rights reserved.
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +24,7 @@ import org.apache.spark.sql.SparkSession
 protected trait ObjectStorageConfig {
   final val cosStorage = "cos"
   final protected val objectStorage = "ObjectStorage"
-  final protected val s3Storage = "s3"
+  final val s3Storage = "s3"
   final protected val service = "service"
 
   final protected val fieldAccessKey = "accessKey"
@@ -32,40 +34,56 @@ protected trait ObjectStorageConfig {
   final protected val fieldPath = "path"
   final protected val fieldWriteMode = "writeMode"
   final protected val fieldSecretKey = "secretKey"
+  final protected val fieldIamApiKey = "iamApiKey"
+  final protected val fieldIamServiceId = "iamServiceId"
   final protected val fieldStorage = "storage"
+  final protected val fieldAnonymousAccess = "anonymousAccess"
+
   def validate(config: Map[String, String]): Boolean = {
-    config.contains(fieldAccessKey) && config.contains(fieldSecretKey) && config.contains(fieldBucket) && config
-      .contains(fieldPath) && config.contains(fieldFormat)
+    (((config.contains(fieldAccessKey) && config.contains(fieldSecretKey)) || (config.contains(fieldIamApiKey) && config.contains(fieldIamServiceId)))
+      && config.contains(fieldBucket) && config.contains(fieldPath) && config.contains(fieldFormat)) ||
+      (config.contains(fieldBucket) && config.contains(fieldPath) && config.contains(fieldFormat))
   }
 }
 
-protected abstract class BaseStorageConfig(config: Node) extends ObjectStorageConfig{
+protected abstract class BaseStorageConfig(config: Node) extends ObjectStorageConfig {
   final val format: String = config.value(fieldFormat)
   final val saveMode: Option[String] = config.value.get(fieldWriteMode)
   final protected val id: String = config.id
-  final protected val accessKey: String = config.value(fieldAccessKey)
-  final protected val secretKey: String = config.value(fieldSecretKey)
+  final protected val accessKey: Option[String] = config.value.get(fieldAccessKey)
+  final protected val secretKey: Option[String] = config.value.get(fieldSecretKey)
   final protected val bucket: String = config.value(fieldBucket)
   final protected val path: String = config.value(fieldPath)
 
   def setConfig(spark: SparkSession): Unit
+
   def connectPath: String
 }
 
-class COSConfig(config: Node) extends BaseStorageConfig (config){
-  private val endpoint = config.value(fieldEndpoint)
+class COSConfig(config: Node) extends BaseStorageConfig(config) {
+  final private val endpoint = config.value(fieldEndpoint)
+  final private val iamApiKey: Option[String] = config.value.get(fieldIamApiKey)
+  final private val iamServiceId: Option[String] = config.value.get(fieldIamServiceId)
+
   override def setConfig(spark: SparkSession): Unit = {
     spark.conf.set("fs.stocator.scheme.list", cosStorage)
     spark.conf.set(s"fs.$cosStorage.impl", "com.ibm.stocator.fs.ObjectStoreFileSystem")
     spark.conf.set(s"fs.stocator.$cosStorage.impl", s"com.ibm.stocator.fs.$cosStorage.COSAPIClient")
     spark.conf.set(s"fs.stocator.$cosStorage.scheme", cosStorage)
     spark.conf.set(s"fs.$cosStorage.$service.endpoint", endpoint)
-    spark.conf.set(s"fs.$cosStorage.$service.access.key", accessKey)
-    spark.conf.set(s"fs.$cosStorage.$service.secret.key", secretKey)
+    (accessKey, secretKey) match {
+      case (None, None) =>
+        spark.conf.set(s"fs.$cosStorage.$service.iam.api.key", iamApiKey.orNull)
+        spark.conf.set(s"fs.$cosStorage.$service.iam.service.id", iamServiceId.orNull)
+      case (Some(accessK), Some(secretK)) =>
+        spark.conf.set(s"fs.$cosStorage.$service.access.key", accessK)
+        spark.conf.set(s"fs.$cosStorage.$service.secret.key", secretK)
+    }
   }
 
   override def connectPath: String = s"$cosStorage://$bucket.$service/$path"
 }
+
 object COSConfig extends ObjectStorageConfig {
   override def validate(config: Map[String, String]): Boolean =
     super.validate(config) &&
@@ -73,17 +91,24 @@ object COSConfig extends ObjectStorageConfig {
       config.get(fieldStorage).contains(cosStorage)
 }
 
-class S3Config(config: Node)  extends BaseStorageConfig (config){
+class S3Config(config: Node) extends BaseStorageConfig(config) {
+  final private val signed: Boolean = config.value(fieldAnonymousAccess).toBoolean
+
   override def setConfig(spark: SparkSession): Unit = {
-    spark.conf.set("fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
-    spark.conf.set("fs.s3a.access.key", accessKey)
-    spark.conf.set("fs.s3a.secret.key", secretKey)
+    if (signed) {
+      spark.conf.set("fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider")
+    } else {
+      spark.conf.set("fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
+      spark.conf.set("fs.s3a.access.key", accessKey.orNull)
+      spark.conf.set("fs.s3a.secret.key", secretKey.orNull)
+    }
   }
 
   override def connectPath: String = s"s3a://$bucket/$path"
 }
+
 object S3Config extends ObjectStorageConfig {
   override def validate(config: Map[String, String]): Boolean =
     super.validate(config) &&
-      config.get(fieldStorage).contains(s3Storage)
+      config.get(fieldStorage).contains(s3Storage) && config.contains(fieldAnonymousAccess)
 }

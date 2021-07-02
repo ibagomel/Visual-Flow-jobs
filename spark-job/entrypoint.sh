@@ -1,6 +1,8 @@
 #!/bin/bash
 
 #
+# Copyright (c) 2021 IBA Group, a.s. All rights reserved.
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -18,7 +20,7 @@
 #
 
 set -ex
-JOB_JAR="spark-transformations-0.1-jar-with-dependencies.jar"
+JOB_JAR="/opt/spark/work-dir/spark-transformations-0.1-jar-with-dependencies.jar"
 
 exec /opt/spark/bin/spark-submit \
   --master "$JOB_MASTER" \

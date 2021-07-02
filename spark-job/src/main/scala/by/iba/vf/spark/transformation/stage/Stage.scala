@@ -1,4 +1,6 @@
 /*
+ * Copyright (c) 2021 IBA Group, a.s. All rights reserved.
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,6 +55,7 @@ trait StageBuilder {
   protected def validate(config: Map[String, String]): Boolean
 
   protected def convert(config: Node): Stage
+
   protected def getOptions(config: Map[String, String]): Map[String, String] = {
     val optionPattern = "option\\.(.+)".r
     config

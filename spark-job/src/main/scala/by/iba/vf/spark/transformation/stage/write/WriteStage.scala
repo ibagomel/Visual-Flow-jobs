@@ -1,4 +1,6 @@
 /*
+ * Copyright (c) 2021 IBA Group, a.s. All rights reserved.
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,6 +32,7 @@ protected abstract class WriteStage(val id: String, storage: String) extends Sta
 
   def write(df: DataFrame)(implicit spark: SparkSession): Unit
 
+  @SuppressWarnings(Array("VariableShadowing"))
   protected def getDfWriter(df: DataFrame, saveMode: Option[String]): DataFrameWriter[Row] =
     saveMode.map(df.write.mode).getOrElse(df.write)
 

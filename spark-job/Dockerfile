@@ -1,4 +1,6 @@
 #
+# Copyright (c) 2021 IBA Group, a.s. All rights reserved.
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-FROM ghcr.io/ibagomel/spark:spark-2.4.7-bin-hadoop2.7
+FROM ghcr.io/ibagomel/spark:spark-3.1.1-bin-hadoop3.2
 
 ARG uid=1000
 ARG gid=1000
@@ -23,12 +25,15 @@ ARG username=job-user
 
 USER root
 
-RUN apt update && apt install -y procps \
-    && groupadd -g ${gid} ${group} \
-    && useradd -u ${uid} -g ${gid} -m ${username}
+RUN yum update -y \
+    && yum install -y shadow-utils \
+    && /usr/sbin/groupadd -g ${gid} ${group} \
+    && /usr/sbin/useradd -u ${uid} -g ${gid} -m ${username}
 
 COPY target/spark-transformations-0.1-jar-with-dependencies.jar /opt/spark/work-dir/
 COPY entrypoint.sh /opt/spark/work-dir/
 RUN chmod -R 755 /opt/spark/work-dir
 
 USER ${username}
+
+CMD ["/usr/bin/bash", "/opt/spark/work-dir/entrypoint.sh"]

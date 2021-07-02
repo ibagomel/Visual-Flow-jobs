@@ -1,4 +1,6 @@
 /*
+ * Copyright (c) 2021 IBA Group, a.s. All rights reserved.
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,11 +29,11 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SparkSession
 
 private[read] final class ElasticReadStage(
-    override val id: String,
-    index: String,
-    certDataPass: Option[(String, String, String)],
-    elasticConfig: Map[String, String]
-) extends ReadStage(id, "elastic") {
+                                            override val id: String,
+                                            index: String,
+                                            certDataPass: Option[(String, String, String)],
+                                            elasticConfig: Map[String, String]
+                                          ) extends ReadStage(id, "elastic") {
 
   override val builder: StageBuilder = ElasticReadStageBuilder
 
