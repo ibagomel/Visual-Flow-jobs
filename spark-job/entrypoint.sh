@@ -40,6 +40,7 @@ exec /opt/spark/bin/spark-submit \
   --conf spark.kubernetes.executor.request.cores="$EXECUTOR_REQUEST_CORES" \
   --conf spark.kubernetes.executor.limit.cores="$EXECUTOR_CORES" \
   --conf spark.kubernetes.container.image.pullSecrets="$IMAGE_PULL_SECRETS" \
+  --conf spark.kubernetes.container.image.pullPolicy="Always" \
   --conf spark.executor.instances="$EXECUTOR_INSTANCES" \
   --conf spark.driver.host="$POD_IP" \
   --conf spark.driver.port=14536 \
