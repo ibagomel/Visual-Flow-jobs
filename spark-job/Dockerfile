@@ -26,7 +26,7 @@ ARG username=job-user
 USER root
 
 RUN yum update -y \
-    && yum install -y shadow-utils \
+    && yum install -y shadow-utils procps-ng \
     && /usr/sbin/groupadd -g ${gid} ${group} \
     && /usr/sbin/useradd -u ${uid} -g ${gid} -m ${username}
 
