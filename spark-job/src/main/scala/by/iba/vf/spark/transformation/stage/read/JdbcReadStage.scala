@@ -32,15 +32,15 @@ private[read] final class JdbcReadStage(
     override val id: String,
     schemaTable: String,
     truststorePath: Option[String],
-    jdbcConfig: Map[String, String]
+    jdbcConfig: Map[String, String],
+    options: Map[String, String]
 ) extends ReadStage(id, JdbcReadStageBuilder.jdbcStorage) {
 
   override val builder: StageBuilder = JdbcReadStageBuilder
 
   override def read(implicit spark: SparkSession): DataFrame = {
     implicit val sc: SparkContext = spark.sparkContext
-
-    val query = s"(select t.* from $schemaTable as t) as tabName"
+    val query = options.get(JDBCOptions.JDBC_TABLE_NAME).map("(" + _ + ")").getOrElse(s"(select t.* from $schemaTable as t) as tabName")
 
     val config = jdbcConfig + (JDBCOptions.JDBC_TABLE_NAME -> query)
     truststorePath.foreach(sc.addFile)
@@ -56,6 +56,6 @@ object JdbcReadStageBuilder extends JdbcStageBuilder with ReadStageBuilder {
   override protected def convert(config: Node): Stage = {
     val (schemaTable, map) = jdbcParams(config)
     val truststorePathOption = if (config.value.contains(fieldCertData)) Some(truststorePath) else None
-    new JdbcReadStage(config.id, schemaTable, truststorePathOption, map)
+    new JdbcReadStage(config.id, schemaTable, truststorePathOption, map, getOptions(config.value))
   }
 }

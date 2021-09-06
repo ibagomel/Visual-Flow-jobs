@@ -45,7 +45,7 @@ trait JdbcStageBuilder extends StageBuilder {
 
   def jdbcParams(config: Node): (String, Map[String, String]) = {
     val jdbcUrl = config.value(fieldJdbcUrl)
-    val schemaTable = s"${config.value.get(fieldSchema).map(_ + ".").getOrElse("")}${config.value(fieldTable)}"
+    val schemaTable = s"${config.value.get(fieldSchema).map(_ + ".").getOrElse("")}${config.value.getOrElse(fieldTable, "")}"
     val user = config.value(fieldUser)
     val password = config.value(fieldPassword)
     val driver = drivers

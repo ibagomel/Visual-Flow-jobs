@@ -61,7 +61,8 @@ class JdbcReadStageTest extends AnyFunSpec with PrivateMethodTester with Mockito
 
     doNothing.when(context).addFile("jdbc-source-truststore.jks")
 
-    val stage = new JdbcReadStage(id, schemaTable, Some("jdbc-source-truststore.jks"), config)
+    val optionsMap = Map[String, String]()
+    val stage = new JdbcReadStage(id, schemaTable, Some("jdbc-source-truststore.jks"), config, optionsMap)
     val result = stage.read
 
     result should be(df)
