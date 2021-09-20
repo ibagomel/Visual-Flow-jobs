@@ -33,14 +33,15 @@ private[read] final class JdbcReadStage(
     schemaTable: String,
     truststorePath: Option[String],
     jdbcConfig: Map[String, String],
-    options: Map[String, String]
+    options: Map[String, String],
+    customSql: Boolean
 ) extends ReadStage(id, JdbcReadStageBuilder.jdbcStorage) {
 
   override val builder: StageBuilder = JdbcReadStageBuilder
 
   override def read(implicit spark: SparkSession): DataFrame = {
     implicit val sc: SparkContext = spark.sparkContext
-    val query = options.get(JDBCOptions.JDBC_TABLE_NAME).map("(" + _ + ")").getOrElse(s"(select t.* from $schemaTable as t) as tabName")
+    val query = if (customSql && options.contains(JDBCOptions.JDBC_TABLE_NAME)) "(" + options(JDBCOptions.JDBC_TABLE_NAME) + ")" else s"(select t.* from $schemaTable as t) as tabName"
 
     val config = jdbcConfig + (JDBCOptions.JDBC_TABLE_NAME -> query)
     truststorePath.foreach(sc.addFile)
@@ -50,12 +51,15 @@ private[read] final class JdbcReadStage(
 }
 
 object JdbcReadStageBuilder extends JdbcStageBuilder with ReadStageBuilder {
+  final protected val fieldCustomSQL = "customSql"
   override protected def validateRead(config: Map[String, String]): Boolean =
-    validateJdbc(config)
+    validateJdbc(config) && config.contains(fieldCustomSQL) &&
+      ((!config(fieldCustomSQL).toBoolean && config.contains(fieldSchema) && config.contains(fieldTable)) ||
+          (config(fieldCustomSQL).toBoolean && config.contains("option.".concat(JDBCOptions.JDBC_TABLE_NAME))))
 
   override protected def convert(config: Node): Stage = {
     val (schemaTable, map) = jdbcParams(config)
     val truststorePathOption = if (config.value.contains(fieldCertData)) Some(truststorePath) else None
-    new JdbcReadStage(config.id, schemaTable, truststorePathOption, map, getOptions(config.value))
+    new JdbcReadStage(config.id, schemaTable, truststorePathOption, map, getOptions(config.value), config.value(fieldCustomSQL).toBoolean)
   }
 }

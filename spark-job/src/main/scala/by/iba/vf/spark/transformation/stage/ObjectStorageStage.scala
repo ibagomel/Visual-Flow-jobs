@@ -19,6 +19,7 @@
 package by.iba.vf.spark.transformation.stage
 
 import by.iba.vf.spark.transformation.config.Node
+import by.iba.vf.spark.transformation.exception.TransformationConfigurationException
 import org.apache.spark.sql.SparkSession
 
 protected trait ObjectStorageConfig {
@@ -38,10 +39,16 @@ protected trait ObjectStorageConfig {
   final protected val fieldIamServiceId = "iamServiceId"
   final protected val fieldStorage = "storage"
   final protected val fieldAnonymousAccess = "anonymousAccess"
+  final protected val fieldAuthType = "authType"
+  final protected val authHMAC = "HMAC"
+  final protected val authIAM = "IAM"
 
   def validate(config: Map[String, String]): Boolean = {
-    (((config.contains(fieldAccessKey) && config.contains(fieldSecretKey)) || (config.contains(fieldIamApiKey) && config.contains(fieldIamServiceId)))
-      && config.contains(fieldBucket) && config.contains(fieldPath) && config.contains(fieldFormat)) ||
+    (
+      config.contains(fieldAuthType) &&
+        ((authHMAC.equals(config(fieldAuthType)) && config.contains(fieldAccessKey) && config.contains(fieldSecretKey)) ||
+          (authIAM.equals(config(fieldAuthType)) && config.contains(fieldIamApiKey) && config.contains(fieldIamServiceId)))
+        && config.contains(fieldBucket) && config.contains(fieldPath) && config.contains(fieldFormat)) ||
       (config.contains(fieldBucket) && config.contains(fieldPath) && config.contains(fieldFormat))
   }
 }
@@ -52,6 +59,7 @@ protected abstract class BaseStorageConfig(config: Node) extends ObjectStorageCo
   final protected val id: String = config.id
   final protected val accessKey: Option[String] = config.value.get(fieldAccessKey)
   final protected val secretKey: Option[String] = config.value.get(fieldSecretKey)
+  final protected val authType: Option[String] = config.value.get(fieldAuthType)
   final protected val bucket: String = config.value(fieldBucket)
   final protected val path: String = config.value(fieldPath)
 
@@ -71,13 +79,14 @@ class COSConfig(config: Node) extends BaseStorageConfig(config) {
     spark.conf.set(s"fs.stocator.$cosStorage.impl", s"com.ibm.stocator.fs.$cosStorage.COSAPIClient")
     spark.conf.set(s"fs.stocator.$cosStorage.scheme", cosStorage)
     spark.conf.set(s"fs.$cosStorage.$service.endpoint", endpoint)
-    (accessKey, secretKey) match {
-      case (None, None) =>
+    authType match {
+      case Some(auth) if authIAM.equals(auth) =>
         spark.conf.set(s"fs.$cosStorage.$service.iam.api.key", iamApiKey.orNull)
         spark.conf.set(s"fs.$cosStorage.$service.iam.service.id", iamServiceId.orNull)
-      case (Some(accessK), Some(secretK)) =>
-        spark.conf.set(s"fs.$cosStorage.$service.access.key", accessK)
-        spark.conf.set(s"fs.$cosStorage.$service.secret.key", secretK)
+      case Some(auth) if authHMAC.equals(auth) =>
+        spark.conf.set(s"fs.$cosStorage.$service.access.key", accessKey.orNull)
+        spark.conf.set(s"fs.$cosStorage.$service.secret.key", secretKey.orNull)
+      case _ => throw new TransformationConfigurationException("Unknown authentication type for COS stage has been encountered")
     }
   }
 

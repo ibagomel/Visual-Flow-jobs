@@ -61,8 +61,8 @@ class JdbcReadStageTest extends AnyFunSpec with PrivateMethodTester with Mockito
 
     doNothing.when(context).addFile("jdbc-source-truststore.jks")
 
-    val optionsMap = Map[String, String]()
-    val stage = new JdbcReadStage(id, schemaTable, Some("jdbc-source-truststore.jks"), config, optionsMap)
+    val optionsMap: Map[String, String] = Map.empty
+    val stage = new JdbcReadStage(id, schemaTable, Some("jdbc-source-truststore.jks"), config, optionsMap, false)
     val result = stage.read
 
     result should be(df)
@@ -79,7 +79,8 @@ class JdbcReadStageBuilderTest extends AnyFunSpec with PrivateMethodTester with 
       "user" -> "test",
       "password" -> "test",
       "schema" -> "SCHEMA",
-      "table" -> "TABLE"
+      "table" -> "TABLE",
+      "customSql" -> "false"
     )
     val result = JdbcReadStageBuilder invokePrivate PrivateMethod[Boolean]('validate)(config)
     result should be(true)
@@ -96,7 +97,8 @@ class JdbcReadStageBuilderTest extends AnyFunSpec with PrivateMethodTester with 
           "user" -> "test",
           "password" -> "test",
           "schema" -> "SCHEMA",
-          "table" -> "TABLE"
+          "table" -> "TABLE",
+          "customSql" -> "false"
         )
       )
 
@@ -115,7 +117,8 @@ class JdbcReadStageBuilderTest extends AnyFunSpec with PrivateMethodTester with 
           "password" -> "test",
           "certData" -> "",
           "schema" -> "SCHEMA",
-          "table" -> "TABLE"
+          "table" -> "TABLE",
+          "customSql" -> "false"
         )
       )
 

@@ -35,7 +35,7 @@ class ObjectStorageStageTest extends AnyFunSpec with PrivateMethodTester with Mo
     "writeMode" -> "wm",
     "secretKey" -> "sk"
   )
-  val cosNode = Node("id1", m + ("endpoint" -> "ep") + ("storage" -> "cos"))
+  val cosNode = Node("id1", m + ("endpoint" -> "ep") + ("storage" -> "cos") + ("authType" -> "HMAC"))
   val s3Node = Node("id1", m + ("storage" -> "s3") + ("anonymousAccess" -> "false"))
 
   describe("COSConfig") {
