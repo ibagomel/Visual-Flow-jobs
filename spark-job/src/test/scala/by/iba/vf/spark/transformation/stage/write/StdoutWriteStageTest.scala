@@ -34,6 +34,7 @@ class StdoutWriteStageTest extends AnyFunSpec with PrivateMethodTester with Mock
     implicit val spark: SparkSession = mock[SparkSession]
     val df = mock[DataFrame]
     doNothing.when(df).show(false)
+    when(df.count()).thenReturn(1)
 
     val stage = new StdoutWriteStage("id")
 

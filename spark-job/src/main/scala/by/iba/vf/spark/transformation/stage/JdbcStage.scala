@@ -30,7 +30,11 @@ trait JdbcStageBuilder extends StageBuilder {
   val truststorePath = "jdbc-source-truststore.jks"
   val drivers = Map(
     "db2" -> "com.ibm.db2.jcc.DB2Driver",
-    "sqlite" -> "org.sqlite.JDBC"
+    "sqlite" -> "org.sqlite.JDBC",
+    "oracle" -> "oracle.jdbc.driver.OracleDriver",
+    "mysql" -> "com.mysql.cj.jdbc.Driver",
+    "postgresql" -> "org.postgresql.Driver",
+    "mssql" -> "com.microsoft.sqlserver.jdbc.SQLServerDriver"
   )
 
   val jdbcStorage = "jdbc"

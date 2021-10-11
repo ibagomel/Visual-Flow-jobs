@@ -1,54 +1,37 @@
 {
   "nodes": [
     {
-      "id": "gen-table1",
+      "id": "read1",
       "value": {
         "operation": "READ",
-        "storage": "GENERATOR",
-        "alias": "left"
+        "customSql": "false",
+        "jdbcUrl": "jdbc:sqlserver://okd4w1.okd.gomel.iba.by:31344;databaseName=master",
+        "storage": "mssql",
+        "schema": "dbo",
+        "table": "test_table",
+        "user": "",
+        "password": ""
       }
     },
     {
-      "id": "dest-table1",
+      "id": "write1",
       "value": {
         "operation": "WRITE",
-        "storage": "sqlite",
-        "jdbcUrlOld": "jdbc:sqlite:/home/lyosha/Downloads/unknown_name.sqlite",
-        "jdbcUrl": "jdbc:sqlite:src/main/resources/test.sqlite",
-        "table": "p1",
-        "user": "user",
+        "jdbcUrl": "jdbc:sqlserver://okd4w1.okd.gomel.iba.by:31344;databaseName=master",
+        "storage": "mssql",
+        "schema": "dbo",
+        "table": "test_table1",
         "writeMode": "overwrite",
-        "password": "password"
-      }
-    },
-    {
-      "id": "source-table1",
-      "value": {
-        "operation": "READ",
-        "storage": "sqlite",
-        "jdbcUrl": "jdbc:sqlite:src/main/resources/test.sqlite",
-        "table": "p1",
-        "user": "user",
-        "password": "password"
-      }
-    },
-    {
-      "id": "print1",
-      "value": {
-        "operation": "WRITE",
-        "storage": "STDOUT"
+        "user": "",
+        "password": ""
       }
     }
 
   ],
   "edges": [
     {
-      "source": "gen-table1",
-      "target": "dest-table1"
-    },
-    {
-      "source": "source-table1",
-      "target": "print1"
+      "source": "read1",
+      "target": "write1"
     }
 
   ]

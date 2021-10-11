@@ -32,6 +32,7 @@ private[write] final class StdoutWriteStage(override val id: String)
 
   override def write(df: DataFrame)(implicit spark: SparkSession): Unit = {
     df.show(truncate = false)
+    printf("Total row count: %d%n", df.count())
   }
 }
 
