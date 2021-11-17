@@ -27,6 +27,7 @@ USER root
 
 RUN yum update -y \
     && yum install -y shadow-utils procps-ng \
+    && yum update ca-certificates -y \
     && /usr/sbin/groupadd -g ${gid} ${group} \
     && /usr/sbin/useradd -u ${uid} -g ${gid} -m ${username}
 

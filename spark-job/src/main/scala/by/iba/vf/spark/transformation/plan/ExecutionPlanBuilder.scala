@@ -33,16 +33,8 @@ import by.iba.vf.spark.transformation.stage.function.JoinStageBuilder
 import by.iba.vf.spark.transformation.stage.function.RemoveDuplicatesStageBuilder
 import by.iba.vf.spark.transformation.stage.function.TransformStageBuilder
 import by.iba.vf.spark.transformation.stage.function.UnionStageBuilder
-import by.iba.vf.spark.transformation.stage.read.DataGeneratorStageBuilder
-import by.iba.vf.spark.transformation.stage.read.ElasticReadStageBuilder
-import by.iba.vf.spark.transformation.stage.read.JdbcReadStageBuilder
-import by.iba.vf.spark.transformation.stage.read.ObjectStorageReadCOSStageBuilder
-import by.iba.vf.spark.transformation.stage.read.ObjectStorageReadS3StageBuilder
-import by.iba.vf.spark.transformation.stage.write.ElasticWriteStageBuilder
-import by.iba.vf.spark.transformation.stage.write.JdbcWriteStageBuilder
-import by.iba.vf.spark.transformation.stage.write.ObjectStorageWriteCOSStageBuilder
-import by.iba.vf.spark.transformation.stage.write.ObjectStorageWriteS3StageBuilder
-import by.iba.vf.spark.transformation.stage.write.StdoutWriteStageBuilder
+import by.iba.vf.spark.transformation.stage.read.{CassandraReadStageBuilder, MongoReadStageBuilder, DataGeneratorStageBuilder, ElasticReadStageBuilder, JdbcReadStageBuilder, ObjectStorageReadCOSStageBuilder, ObjectStorageReadS3StageBuilder}
+import by.iba.vf.spark.transformation.stage.write.{CassandraWriteStageBuilder, MongoWriteStageBuilder, ElasticWriteStageBuilder, JdbcWriteStageBuilder, ObjectStorageWriteCOSStageBuilder, ObjectStorageWriteS3StageBuilder, StdoutWriteStageBuilder}
 
 object ExecutionPlanBuilder {
 
@@ -54,10 +46,14 @@ object ExecutionPlanBuilder {
       ElasticWriteStageBuilder,
       JdbcReadStageBuilder,
       JdbcWriteStageBuilder,
+      MongoReadStageBuilder,
+      MongoWriteStageBuilder,
       ObjectStorageReadCOSStageBuilder,
       ObjectStorageReadS3StageBuilder,
       ObjectStorageWriteCOSStageBuilder,
       ObjectStorageWriteS3StageBuilder,
+      CassandraWriteStageBuilder,
+      CassandraReadStageBuilder,
       StdoutWriteStageBuilder,
       FilterStageBuilder,
       TransformStageBuilder,

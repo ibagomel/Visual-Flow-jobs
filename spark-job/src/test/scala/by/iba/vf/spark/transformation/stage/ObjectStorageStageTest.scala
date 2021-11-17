@@ -40,7 +40,7 @@ class ObjectStorageStageTest extends AnyFunSpec with PrivateMethodTester with Mo
 
   describe("COSConfig") {
 
-    it("setConfig") {
+    it("applyConfig") {
       val conf = new COSConfig(cosNode)
       val spark = mock[SparkSession]
       val runtimeConf = mock[RuntimeConfig]
@@ -68,7 +68,7 @@ class ObjectStorageStageTest extends AnyFunSpec with PrivateMethodTester with Mo
 
   describe("S3Config") {
 
-    it("setConfig") {
+    it("applyConfig") {
       val conf = new S3Config(s3Node)
       val spark = mock[SparkSession]
       val runtimeConf = mock[RuntimeConfig]

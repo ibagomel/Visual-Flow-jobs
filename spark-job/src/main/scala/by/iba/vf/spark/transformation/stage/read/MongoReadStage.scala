@@ -16,37 +16,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package by.iba.vf.spark.transformation.stage.write
+package by.iba.vf.spark.transformation.stage.read
 
 import by.iba.vf.spark.transformation.config.Node
-import by.iba.vf.spark.transformation.stage.OperationType
+import by.iba.vf.spark.transformation.stage.MongoStageConfig
+import by.iba.vf.spark.transformation.stage.ReadStageBuilder
 import by.iba.vf.spark.transformation.stage.Stage
 import by.iba.vf.spark.transformation.stage.StageBuilder
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SparkSession
 
-private[write] final class StdoutWriteStage(override val id: String)
-  extends WriteStage(id, StdoutWriteStageBuilder.StdoutStorage) {
+private[read] final class MongoReadStage(
+    override val id: String,
+    mongoConfig: Map[String, String]
+) extends ReadStage(id, "mongo") {
 
-  override val builder: StageBuilder = StdoutWriteStageBuilder
+    override val builder: StageBuilder = MongoReadStageBuilder
 
-  override def write(df: DataFrame)(implicit spark: SparkSession): Unit = {
-    df.show(truncate = false)
-    printf("Total row count: %d%n", df.count())
-  }
+    override def read(implicit spark: SparkSession): DataFrame = {
+      spark.read.format("com.mongodb.spark.sql.DefaultSource").options(mongoConfig).load.drop("_id")
+    }
+
 }
 
-object StdoutWriteStageBuilder extends StageBuilder {
-  private[write] val StdoutStorage = "stdout"
-  private val FieldStorage = "storage"
-
-  override protected def validate(config: Map[String, String]): Boolean =
-    config.get(fieldOperation).contains(OperationType.WRITE.toString) &&
-      StdoutStorage.equals(config.get(FieldStorage).orNull.toLowerCase)
-
-  override protected def convert(config: Node): Stage = {
-    val id = config.id
-
-    new StdoutWriteStage(id)
-  }
+object MongoReadStageBuilder extends ReadStageBuilder {
+    override protected def validateRead(config: Map[String, String]): Boolean = {
+      MongoStageConfig.validateMongo(config)
+    }
+    
+    override protected def convert(config: Node): Stage = {
+      val mongo = new MongoStageConfig(config)
+      val mongoMap = mongo.mongoParams
+      new MongoReadStage(config.id, mongoMap)
+    }
 }

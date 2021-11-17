@@ -19,34 +19,35 @@
 package by.iba.vf.spark.transformation.stage.write
 
 import by.iba.vf.spark.transformation.config.Node
-import by.iba.vf.spark.transformation.stage.OperationType
+import by.iba.vf.spark.transformation.stage.MongoStageConfig
 import by.iba.vf.spark.transformation.stage.Stage
 import by.iba.vf.spark.transformation.stage.StageBuilder
+import by.iba.vf.spark.transformation.stage.WriteStageBuilder
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SparkSession
 
-private[write] final class StdoutWriteStage(override val id: String)
-  extends WriteStage(id, StdoutWriteStageBuilder.StdoutStorage) {
-
-  override val builder: StageBuilder = StdoutWriteStageBuilder
-
-  override def write(df: DataFrame)(implicit spark: SparkSession): Unit = {
-    df.show(truncate = false)
-    printf("Total row count: %d%n", df.count())
-  }
+private[write] class MongoWriteStage(
+    override val id: String,
+    saveMode: Option[String],
+    mongoConfig: Map[String, String]
+) extends WriteStage(id, "mongo") {
+    override val builder: StageBuilder = MongoWriteStageBuilder
+    
+    override def write(df: DataFrame)(implicit spark: SparkSession): Unit = {
+      val dfWriter = getDfWriter(df, saveMode)
+      dfWriter.format("com.mongodb.spark.sql.DefaultSource").options(mongoConfig).save()
+    }
 }
 
-object StdoutWriteStageBuilder extends StageBuilder {
-  private[write] val StdoutStorage = "stdout"
-  private val FieldStorage = "storage"
+object MongoWriteStageBuilder extends WriteStageBuilder {
+    override protected def validateWrite(config: Map[String, String]): Boolean = {
+      MongoStageConfig.validateMongo(config)
+    }
 
-  override protected def validate(config: Map[String, String]): Boolean =
-    config.get(fieldOperation).contains(OperationType.WRITE.toString) &&
-      StdoutStorage.equals(config.get(FieldStorage).orNull.toLowerCase)
-
-  override protected def convert(config: Node): Stage = {
-    val id = config.id
-
-    new StdoutWriteStage(id)
-  }
+    override protected def convert(config: Node): Stage = {
+      val mongo = new MongoStageConfig(config)
+      val mongoMap = mongo.mongoParams
+      val mode = config.value.get("writeMode")
+      new MongoWriteStage(config.id, mode, mongoMap)
+    }
 }

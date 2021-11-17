@@ -20,8 +20,8 @@ package by.iba.vf.spark.transformation
 
 import by.iba.vf.spark.transformation.config.ProcessConfiguration
 import by.iba.vf.spark.transformation.plan.ExecutionPlanBuilder
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.SparkSession
+import com.datastax.spark.connector.CassandraSparkExtensions
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 private[transformation] object TransformationJob extends Logger {
 
@@ -46,7 +46,7 @@ private[transformation] object TransformationJob extends Logger {
   }
 
   def main(args: Array[String]): Unit = {
-    implicit val spark: SparkSession = SparkSession.builder().getOrCreate()
+    implicit val spark: SparkSession = SparkSession.builder().withExtensions(new CassandraSparkExtensions).getOrCreate()
 
     try {
       run
