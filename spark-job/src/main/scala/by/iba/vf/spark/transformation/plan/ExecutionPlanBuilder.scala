@@ -33,8 +33,8 @@ import by.iba.vf.spark.transformation.stage.function.JoinStageBuilder
 import by.iba.vf.spark.transformation.stage.function.RemoveDuplicatesStageBuilder
 import by.iba.vf.spark.transformation.stage.function.TransformStageBuilder
 import by.iba.vf.spark.transformation.stage.function.UnionStageBuilder
-import by.iba.vf.spark.transformation.stage.read.{CassandraReadStageBuilder, MongoReadStageBuilder, DataGeneratorStageBuilder, ElasticReadStageBuilder, JdbcReadStageBuilder, ObjectStorageReadCOSStageBuilder, ObjectStorageReadS3StageBuilder}
-import by.iba.vf.spark.transformation.stage.write.{CassandraWriteStageBuilder, MongoWriteStageBuilder, ElasticWriteStageBuilder, JdbcWriteStageBuilder, ObjectStorageWriteCOSStageBuilder, ObjectStorageWriteS3StageBuilder, StdoutWriteStageBuilder}
+import by.iba.vf.spark.transformation.stage.read.{CassandraReadStageBuilder, MongoReadStageBuilder, DataGeneratorStageBuilder, ElasticReadStageBuilder, JdbcReadStageBuilder, ObjectStorageReadCOSStageBuilder, ObjectStorageReadS3StageBuilder, RedisReadStageBuilder}
+import by.iba.vf.spark.transformation.stage.write.{CassandraWriteStageBuilder, MongoWriteStageBuilder, ElasticWriteStageBuilder, JdbcWriteStageBuilder, ObjectStorageWriteCOSStageBuilder, ObjectStorageWriteS3StageBuilder, StdoutWriteStageBuilder, RedisWriteStageBuilder}
 
 object ExecutionPlanBuilder {
 
@@ -42,6 +42,8 @@ object ExecutionPlanBuilder {
     Seq(
       DataGeneratorStageBuilder,
       CacheStageBuilder,
+      RedisReadStageBuilder,
+      RedisWriteStageBuilder,
       ElasticReadStageBuilder,
       ElasticWriteStageBuilder,
       JdbcReadStageBuilder,

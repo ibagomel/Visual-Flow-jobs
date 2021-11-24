@@ -25,6 +25,7 @@
         <cve>CVE-2020-9480</cve>
         <cve>CVE-2018-17190</cve>
         <cve>CVE-2021-40531</cve>
+        <cve>CVE-2021-32626</cve>
     </suppress>
 </suppressions>
 
