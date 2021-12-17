@@ -20,9 +20,11 @@ package by.iba.vf.spark.transformation.stage.read
 
 import by.iba.vf.spark.transformation.stage.OperationType
 import by.iba.vf.spark.transformation.stage.Stage
-import by.iba.vf.spark.transformation.stage.StageBuilder
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SparkSession
+
+import java.io.ByteArrayOutputStream
+import scala.util.Using
 
 abstract class ReadStage(val id: String, val storage: String) extends Stage {
   override val operation: OperationType.Value = OperationType.READ
@@ -30,7 +32,20 @@ abstract class ReadStage(val id: String, val storage: String) extends Stage {
 
   def read(implicit spark: SparkSession): DataFrame
 
-  override protected def process(input: Map[String, DataFrame])(implicit spark: SparkSession): Option[DataFrame] =
-    Some(read)
+  override protected def process(input: Map[String, DataFrame])(implicit spark: SparkSession): Option[DataFrame] = {
+    log(s"Reading from $storage, stage $id")
+    val data = Some(read)
+    data.foreach(df => {
+      Using(new ByteArrayOutputStream){ outCapture =>
+        Console.withOut(outCapture) {
+          df.show(10, truncate = false)
+        }
+        val result = new String(outCapture.toByteArray)
+        log(f"Read data sample(top 10 rows):%n$result")
+        log(s"Total number of rows read: ${df.count()}")
+      }
+    })
+    data
+  }
 }
 

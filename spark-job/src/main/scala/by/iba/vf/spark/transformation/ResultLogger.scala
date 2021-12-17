@@ -18,8 +18,14 @@
  */
 package by.iba.vf.spark.transformation
 
-import org.slf4j
+import by.iba.vf.spark.transformation.ResultLogger.RESULT_LEVEL
+import org.apache.logging.log4j.{Level, LogManager, Logger}
 
-trait Logger {
-  protected val logger: slf4j.Logger = slf4j.LoggerFactory.getLogger(this.getClass)
+trait ResultLogger {
+  protected val logger: Logger = LogManager.getLogger(this.getClass)
+  def log(msg: String): Unit = logger.log(RESULT_LEVEL, msg)
+}
+
+object ResultLogger {
+  protected val RESULT_LEVEL: Level = Level.forName("RESULT", 350)
 }

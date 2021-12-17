@@ -26,6 +26,9 @@ import org.apache.spark.sql.DataFrameWriter
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.SparkSession
 
+import java.io.ByteArrayOutputStream
+import scala.util.Using
+
 protected abstract class WriteStage(val id: String, storage: String) extends Stage {
   override val operation: OperationType.Value = OperationType.WRITE
   override val inputsRequired: Int = 1
@@ -38,7 +41,17 @@ protected abstract class WriteStage(val id: String, storage: String) extends Sta
 
   @SuppressWarnings(Array("UnsafeTraversableMethods"))
   override protected def process(input: Map[String, DataFrame])(implicit spark: SparkSession): Option[DataFrame] = {
-    write(input.values.head)
+    val df = input.values.head
+    log(s"Writing to $storage, stage $id")
+    write(df)
+    Using(new ByteArrayOutputStream){ outCapture =>
+      Console.withOut(outCapture) {
+        df.show(10, truncate = false)
+      }
+      val result = new String(outCapture.toByteArray)
+      log(f"Written data sample(top 10 rows):%n$result")
+      log(s"Total number of rows written: ${df.count()}")
+    }
     None
   }
 }

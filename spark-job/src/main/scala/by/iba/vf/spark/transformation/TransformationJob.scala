@@ -23,7 +23,7 @@ import by.iba.vf.spark.transformation.plan.ExecutionPlanBuilder
 import com.datastax.spark.connector.CassandraSparkExtensions
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-private[transformation] object TransformationJob extends Logger {
+private[transformation] object TransformationJob extends ResultLogger {
 
   private def run(implicit spark: SparkSession): Unit = {
     val ep = ExecutionPlanBuilder.buildExecutionPlan(ProcessConfiguration.read)

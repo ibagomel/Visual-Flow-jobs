@@ -19,3 +19,5 @@
 **/*
 !target/spark-transformations-0.1-jar-with-dependencies.jar
 !entrypoint.sh
+!log4j.properties
+!log4j2.xml

@@ -19,29 +19,24 @@
 package by.iba.vf.spark.transformation.stage.function
 
 import by.iba.vf.spark.transformation.config.Node
-import by.iba.vf.spark.transformation.stage.OperationType
-import by.iba.vf.spark.transformation.stage.Stage
-import by.iba.vf.spark.transformation.stage.StageBuilder
-import org.apache.spark.sql.Column
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.types.IntegerType
-import org.apache.spark.sql.types.StructField
-import org.apache.spark.sql.types.StructType
+import by.iba.vf.spark.transformation.stage.{OperationType, Stage, StageBuilder}
+import org.apache.spark.sql.types.{IntegerType, StructField, StructType}
+import org.apache.spark.sql.{Column, DataFrame, Row, SparkSession}
 
 private object ChangeDataCaptureStage {
+  private val OpNoChanges = 0
   private val OpInsert = 1
   private val OpDelete = 2
   private val OpUpdate = 3
 }
 
 private[function] class ChangeDataCaptureStage(
-    val id: String,
-    keyColumns: Seq[String],
-    newDataset: String,
-    oldDataset: String
-) extends Stage {
+                                                val id: String,
+                                                keyColumns: Seq[String],
+                                                newDataset: String,
+                                                oldDataset: String,
+                                                returnAll: Boolean
+                                              ) extends Stage {
   override val operation: OperationType.Value = OperationType.CDC
   override val inputsRequired: Int = 2
   override val builder: StageBuilder = ChangeDataCaptureStageBuilder
@@ -70,7 +65,7 @@ private[function] class ChangeDataCaptureStage(
         nullable = true
       )
     }
-    val rowsRdd = joinedDF.rdd
+    var initialRowsRdd = joinedDF.rdd
       .map { r =>
         val seq = r.toSeq
         val index = seq.slice(from = 0, newStartIdx)
@@ -78,7 +73,10 @@ private[function] class ChangeDataCaptureStage(
         val oldData = seq.slice(oldStartIdx, optIndex)
         (index, newData, oldData)
       }
-      .filter { case (_, newData: Seq[Any], oldData: Seq[Any]) => newData != oldData }
+    if (!returnAll) {
+      initialRowsRdd = initialRowsRdd.filter { case (_, newData: Seq[Any], oldData: Seq[Any]) => newData != oldData }
+    }
+    val rowsRdd = initialRowsRdd
       .map {
         case (keyColumns: Seq[Any], Seq(null, _*), oldData: Seq[Any]) =>
           keyColumns ++ oldData :+ ChangeDataCaptureStage.OpDelete
@@ -90,7 +88,7 @@ private[function] class ChangeDataCaptureStage(
           if (newDataSortedSeq != oldDataSortedSeq) {
             keyColumns ++ newData :+ ChangeDataCaptureStage.OpUpdate
           } else {
-            Nil
+            keyColumns ++ oldData :+ ChangeDataCaptureStage.OpNoChanges
           }
       }
       .filter(_.nonEmpty)
@@ -104,16 +102,21 @@ object ChangeDataCaptureStageBuilder extends StageBuilder {
   private val FieldKeyColumns = "keyColumns"
   private val FieldNewDataset = "newDataset"
   private val FieldOldDataset = "oldDataset"
+  private val FieldMode = "mode"
+  private val ModeDelta = "delta"
+  private val ModeReturnAll = "all"
 
   override protected def validate(config: Map[String, String]): Boolean =
     config.get(fieldOperation).contains(OperationType.CDC.toString) && config.contains(FieldKeyColumns) && config
-      .contains(FieldNewDataset) && config.contains(FieldOldDataset)
+      .contains(FieldNewDataset) && config.contains(FieldOldDataset) &&
+      config.contains(FieldMode) && List(ModeDelta, ModeReturnAll).contains(config(FieldMode))
 
   override protected def convert(config: Node): Stage =
     new ChangeDataCaptureStage(
       config.id,
       config.value(FieldKeyColumns).split(",").map(_.trim),
       config.value(FieldNewDataset),
-      config.value(FieldOldDataset)
+      config.value(FieldOldDataset),
+      ModeReturnAll.equals(config.value(FieldMode))
     )
 }

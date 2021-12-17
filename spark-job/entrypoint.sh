@@ -46,4 +46,5 @@ exec /opt/spark/bin/spark-submit \
   --conf spark.driver.port=14536 \
   --conf spark.kubernetes.executor.label.jobId="$JOB_ID" \
   --conf spark.kubernetes.executor.label.pipelineJobId="$PIPELINE_JOB_ID" \
-  "$JOB_JAR"
+  "$JOB_JAR" \
+  -Dlog4j2.configurationFile=/opt/spark/conf/log4j.properties

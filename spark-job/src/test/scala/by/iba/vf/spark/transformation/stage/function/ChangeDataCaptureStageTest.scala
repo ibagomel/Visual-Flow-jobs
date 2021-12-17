@@ -29,13 +29,25 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers._
 
 class ChangeDataCaptureStageTest extends AnyFunSpec with MockitoSugar with PrivateMethodTester {
+  implicit val spark: SparkSession = SparkSession.builder().master("local").getOrCreate()
+  import spark.implicits._
+
   it("process") {
-    implicit val spark: SparkSession = SparkSession.builder().master("local").getOrCreate()
-    import spark.implicits._
     val newDF = Seq((1, 2), (5, 6), (8, 9)).toDF("a", "b")
     val oldDF = Seq((1, 2), (3, 4), (5, 7)).toDF("a", "b")
     val expected = Seq((3, 4, 2), (5, 6, 3), (8, 9, 1)).toDF("a", "b", "operation")
-    val stage = new ChangeDataCaptureStage("id", Seq("a"), "1", "2")
+    val stage = new ChangeDataCaptureStage("id", Seq("a"), "1", "2", false)
+
+    val result = stage invokePrivate PrivateMethod[Option[DataFrame]]('process)(Map("1" -> newDF, "2" -> oldDF), spark)
+
+    result.orNull.collectAsList() should be(expected.collectAsList())
+  }
+
+  it("processRetAll") {
+    val newDF = Seq((1, 2), (5, 6), (8, 9)).toDF("a", "b")
+    val oldDF = Seq((1, 2), (3, 4), (5, 7)).toDF("a", "b")
+    val expected = Seq((1, 2, 0), (3, 4, 2), (5, 6, 3), (8, 9, 1)).toDF("a", "b", "operation")
+    val stage = new ChangeDataCaptureStage("id", Seq("a"), "1", "2", true)
 
     val result = stage invokePrivate PrivateMethod[Option[DataFrame]]('process)(Map("1" -> newDF, "2" -> oldDF), spark)
 
@@ -45,14 +57,14 @@ class ChangeDataCaptureStageTest extends AnyFunSpec with MockitoSugar with Priva
 
 class ChangeDataCaptureStageBuilderTest extends AnyFunSpec with PrivateMethodTester {
   it("validate") {
-    val config: Map[String, String] = Map("operation" -> OperationType.CDC.toString, "keyColumns" -> "testing", "newDataset" -> "1", "oldDataset" -> "2")
+    val config: Map[String, String] = Map("operation" -> OperationType.CDC.toString, "keyColumns" -> "testing", "newDataset" -> "1", "oldDataset" -> "2", "mode" -> "delta")
 
     val result = ChangeDataCaptureStageBuilder invokePrivate PrivateMethod[Boolean]('validate)(config)
     result should be(true)
   }
 
   it("convert") {
-    val config: Node = Node("id", Map("operation" -> OperationType.CDC.toString, "keyColumns" -> "testing", "newDataset" -> "1", "oldDataset" -> "2"))
+    val config: Node = Node("id", Map("operation" -> OperationType.CDC.toString, "keyColumns" -> "testing", "newDataset" -> "1", "oldDataset" -> "2", "mode" -> "delta"))
 
     val result = ChangeDataCaptureStageBuilder invokePrivate PrivateMethod[Stage]('convert)(config)
 

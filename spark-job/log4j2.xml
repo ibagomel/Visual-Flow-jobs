@@ -1,4 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
+  ~ Copyright (c) 2021 IBA Group, a.s. All rights reserved.
+  ~
   ~ Licensed to the Apache Software Foundation (ASF) under one or more
   ~ contributor license agreements.  See the NOTICE file distributed with
   ~ this work for additional information regarding copyright ownership.
@@ -15,15 +18,15 @@
   ~ limitations under the License.
   -->
 
-<configuration>
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%date [%thread] [%X{traceId}/%X{spanId}] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
-
-    <root level="INFO">
-        <appender-ref ref="STDOUT" />
-    </root>
-
-</configuration>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{DEFAULT} [%t] [%X{traceId}/%X{spanId}] %-5level %logger{36} - %msg%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>

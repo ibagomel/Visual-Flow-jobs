@@ -18,15 +18,12 @@
  */
 package by.iba.vf.spark.transformation.stage
 
-import java.util.Base64
 
-import by.iba.vf.spark.transformation.Logger
+import by.iba.vf.spark.transformation.ResultLogger
 import by.iba.vf.spark.transformation.config.Node
-import by.iba.vf.spark.transformation.utils.TruststoreGenerator
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
-trait Stage extends Logger {
+trait Stage extends ResultLogger {
 
   val id: String
   val operation: OperationType.Value

@@ -18,12 +18,12 @@
  */
 package by.iba.vf.spark.transformation.plan
 
-import by.iba.vf.spark.transformation.Logger
+import by.iba.vf.spark.transformation.ResultLogger
 import by.iba.vf.spark.transformation.stage.Stage
 
 import scala.collection.mutable.ArrayBuffer
 
-final case class ExecutionPlan(plan: Seq[Set[Stage]], dependencyMap: Map[String, Seq[String]]) extends Logger {
+final case class ExecutionPlan(plan: Seq[Set[Stage]], dependencyMap: Map[String, Seq[String]]) extends ResultLogger {
 
   def printExecutionPlan(): Unit = {
     val widthPerLayer: Array[Int] = plan.map(_.map(_.id).maxBy(_.length).length).toArray

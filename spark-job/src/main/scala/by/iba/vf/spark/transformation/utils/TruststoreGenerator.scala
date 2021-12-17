@@ -26,13 +26,13 @@ import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.util.Base64
 
-import by.iba.vf.spark.transformation.Logger
+import by.iba.vf.spark.transformation.ResultLogger
 import org.apache.spark.sql.SparkSession
 
 /**
  * Utils related to truststore generation
  */
-object TruststoreGenerator extends Logger {
+object TruststoreGenerator extends ResultLogger {
 
   /**
    * Creates a new truststore and puts given certificate inside
