@@ -19,14 +19,8 @@
 package by.iba.vf.spark.transformation.stage.write
 
 import by.iba.vf.spark.transformation.config.Node
-import by.iba.vf.spark.transformation.stage.COSConfig
-import by.iba.vf.spark.transformation.stage.BaseStorageConfig
-import by.iba.vf.spark.transformation.stage.S3Config
-import by.iba.vf.spark.transformation.stage.Stage
-import by.iba.vf.spark.transformation.stage.StageBuilder
-import by.iba.vf.spark.transformation.stage.WriteStageBuilder
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.SparkSession
+import by.iba.vf.spark.transformation.stage._
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 class COSWriteStage(
                      override val id: String,
@@ -34,14 +28,14 @@ class COSWriteStage(
                      config: BaseStorageConfig,
                      options: Map[String, String],
                      cosStorage: String
-) extends WriteStage (id, cosStorage) {
+                   ) extends WriteStage(id, cosStorage) {
   override def write(df: DataFrame)(implicit spark: SparkSession): Unit = {
     config.setConfig(spark)
 
     val dfWriter = getDfWriter(df, config.saveMode)
-
-    dfWriter
       .options(options)
+
+    config.addPartitions(dfWriter)
       .format(config.format)
       .save(config.connectPath)
   }

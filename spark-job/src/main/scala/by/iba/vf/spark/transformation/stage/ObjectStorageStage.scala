@@ -20,7 +20,7 @@ package by.iba.vf.spark.transformation.stage
 
 import by.iba.vf.spark.transformation.config.Node
 import by.iba.vf.spark.transformation.exception.TransformationConfigurationException
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrameWriter, Row, SparkSession}
 
 protected trait ObjectStorageConfig {
   final val cosStorage = "cos"
@@ -40,6 +40,7 @@ protected trait ObjectStorageConfig {
   final protected val fieldStorage = "storage"
   final protected val fieldAnonymousAccess = "anonymousAccess"
   final protected val fieldAuthType = "authType"
+  final protected val partitionByField = "partitionBy"
   final protected val authHMAC = "HMAC"
   final protected val authIAM = "IAM"
 
@@ -56,6 +57,7 @@ protected trait ObjectStorageConfig {
 protected abstract class BaseStorageConfig(config: Node) extends ObjectStorageConfig {
   final val format: String = config.value(fieldFormat)
   final val saveMode: Option[String] = config.value.get(fieldWriteMode)
+  final val partitionBy: Option[Array[String]] = config.value.get(partitionByField).map(x => x.split(',').map(c => c.trim))
   final protected val id: String = config.id
   final protected val accessKey: Option[String] = config.value.get(fieldAccessKey)
   final protected val secretKey: Option[String] = config.value.get(fieldSecretKey)
@@ -66,6 +68,10 @@ protected abstract class BaseStorageConfig(config: Node) extends ObjectStorageCo
   def setConfig(spark: SparkSession): Unit
 
   def connectPath: String
+
+  def addPartitions(dfWriter: DataFrameWriter[Row]): DataFrameWriter[Row] = {
+    partitionBy.map(columns => dfWriter.partitionBy(columns: _*)).getOrElse(dfWriter)
+  }
 }
 
 class COSConfig(config: Node) extends BaseStorageConfig(config) {

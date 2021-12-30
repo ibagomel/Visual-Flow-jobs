@@ -40,6 +40,7 @@ class ObjectStorageWriteStageTest extends AnyFunSpec with PrivateMethodTester wi
     when(cosConfig.format).thenReturn("csv")
     when(cosConfig.connectPath).thenReturn("cp")
     doNothing.when(cosConfig).setConfig(spark)
+    when(cosConfig.addPartitions(dfWriter)).thenReturn(dfWriter)
 
     when(df.write).thenReturn(dfWriter)
     when(dfWriter.mode("overwrite")).thenReturn(dfWriter)
@@ -62,6 +63,7 @@ class ObjectStorageWriteStageTest extends AnyFunSpec with PrivateMethodTester wi
     when(cosConfig.format).thenReturn("csv")
     when(cosConfig.connectPath).thenReturn("cp")
     doNothing.when(cosConfig).setConfig(spark)
+    when(cosConfig.addPartitions(dfWriter)).thenReturn(dfWriter)
 
     when(df.write).thenReturn(dfWriter)
     when(dfWriter.format("csv")).thenReturn(dfWriter)

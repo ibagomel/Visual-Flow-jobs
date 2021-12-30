@@ -41,7 +41,7 @@ class JdbcReadStageTest extends AnyFunSpec with PrivateMethodTester with Mockito
     val schemaTable = "SCHEMA.TABLE"
     val user = "user"
     val password = "password"
-    val query = s"(select t.* from $schemaTable t) tabName"
+    val query = schemaTable
     val driver = "com.ibm.db2.jcc.DB2Driver"
     val config = Map(
       JDBCOptions.JDBC_URL -> jdbcUrl,

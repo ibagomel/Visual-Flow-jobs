@@ -41,9 +41,9 @@ private[read] final class JdbcReadStage(
 
   override def read(implicit spark: SparkSession): DataFrame = {
     implicit val sc: SparkContext = spark.sparkContext
-    val query = if (customSql && options.contains(JDBCOptions.JDBC_TABLE_NAME)) "(" + options(JDBCOptions.JDBC_TABLE_NAME) + ")" else s"(select t.* from $schemaTable t) tabName"
-
-    val config = jdbcConfig + (JDBCOptions.JDBC_TABLE_NAME -> query)
+    val config = if (customSql && options.contains(JDBCOptions.JDBC_TABLE_NAME))
+      jdbcConfig + (JDBCOptions.JDBC_QUERY_STRING -> options(JDBCOptions.JDBC_TABLE_NAME)) else
+      jdbcConfig + (JDBCOptions.JDBC_TABLE_NAME -> schemaTable)
     truststorePath.foreach(sc.addFile)
 
     spark.read.format(JdbcReadStageBuilder.jdbcStorage).options(config).load()
