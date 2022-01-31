@@ -29,7 +29,7 @@ import org.apache.spark.sql.SparkSession
 private[read] final class MongoReadStage(
     override val id: String,
     mongoConfig: Map[String, String]
-) extends ReadStage(id, "mongo") {
+) extends ReadStage(id, MongoStageConfig.storageId) {
 
     override val builder: StageBuilder = MongoReadStageBuilder
 
@@ -40,6 +40,8 @@ private[read] final class MongoReadStage(
 }
 
 object MongoReadStageBuilder extends ReadStageBuilder {
+    override def expectedStorage: String = MongoStageConfig.storageId
+
     override protected def validateRead(config: Map[String, String]): Boolean = {
       MongoStageConfig.validateMongo(config)
     }

@@ -42,6 +42,8 @@ class COSWriteStage(
 }
 
 object ObjectStorageWriteCOSStageBuilder extends WriteStageBuilder {
+  override def expectedStorage: String = COSConfig.cosStorage
+
   override protected def validateWrite(config: Map[String, String]): Boolean =
     COSConfig.validate(config)
 
@@ -50,6 +52,8 @@ object ObjectStorageWriteCOSStageBuilder extends WriteStageBuilder {
 }
 
 object ObjectStorageWriteS3StageBuilder extends WriteStageBuilder {
+  override def expectedStorage: String = COSConfig.s3Storage
+
   override protected def validateWrite(config: Map[String, String]): Boolean =
     S3Config.validate(config)
 

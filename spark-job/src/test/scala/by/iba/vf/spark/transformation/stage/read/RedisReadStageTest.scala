@@ -20,7 +20,7 @@ class RedisReadStageTest extends AnyFunSpec with PrivateMethodTester with Mockit
     val port: String = "prt"
     val password: String = "pwd"
 
-    val config = new RedisStageConfig(Node(id, Map("table" -> table, "host" -> host,  "password" -> password, "port" -> port, "ssl" -> "false", "readMode" -> "key", "operation" -> "READ")))
+    val config = new RedisStageConfig(Node(id, Map("storage" -> "redis", "table" -> table, "host" -> host,  "password" -> password, "port" -> port, "ssl" -> "false", "readMode" -> "key", "operation" -> "READ")))
 
     val dfReader = mock[DataFrameReader]
     val df = mock[DataFrame]
@@ -43,7 +43,7 @@ class RedisReadStageBuilderTest extends AnyFunSpec with PrivateMethodTester with
   val password: String = "pwd"
   val ssl: String = "false"
 
-  val conf: Map[String, String] = Map("table" -> table, "host" -> host, "password" -> password, "port" -> port, "ssl" -> "false", "readMode" -> "key", "operation" -> "READ")
+  val conf: Map[String, String] = Map("storage" -> "redis", "table" -> table, "host" -> host, "password" -> password, "port" -> port, "ssl" -> "false", "readMode" -> "key", "operation" -> "READ")
 
   it("validate") {
     val result = RedisReadStageBuilder invokePrivate PrivateMethod[Boolean](Symbol("validate"))(conf)

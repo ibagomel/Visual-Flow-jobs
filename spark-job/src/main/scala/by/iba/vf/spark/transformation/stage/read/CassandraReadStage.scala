@@ -35,6 +35,7 @@ private[read] final class CassandraReadStage(override val id: String,
 }
 
 object CassandraReadStageBuilder extends ReadStageBuilder {
+  override def expectedStorage: String = CassandraStageConfig.storageId
 
   override protected def validateRead(config: Map[String, String]): Boolean =
     CassandraStageConfig.validateConfig(config)

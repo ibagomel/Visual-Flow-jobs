@@ -48,6 +48,7 @@ class RedisReadStage(override val id: String,
 }
 
 object RedisReadStageBuilder extends ReadStageBuilder {
+  override def expectedStorage: String = RedisStageConfig.storageId
 
   override protected def validateRead(config: Map[String, String]): Boolean =
     RedisStageConfig.validateConfig(config) && config.contains(readModeFieldName) &&

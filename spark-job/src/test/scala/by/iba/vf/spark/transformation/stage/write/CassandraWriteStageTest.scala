@@ -24,7 +24,7 @@ class CassandraWriteStageTest extends AnyFunSpec with PrivateMethodTester with M
     val username: String = "un"
     val saveMode: String = "Append"
 
-    val config = new CassandraStageConfig(Node(id, Map("table" -> table, "keyspace" -> keyspace, "host" -> host, "username" -> username, "password" -> password, "port" -> port, "ssl" -> "false", "writeMode" -> saveMode, "pushdownEnabled" -> "false", "operation"-> "WRITE")))
+    val config = new CassandraStageConfig(Node(id, Map("storage" -> "cassandra", "table" -> table, "keyspace" -> keyspace, "host" -> host, "username" -> username, "password" -> password, "port" -> port, "ssl" -> "false", "writeMode" -> saveMode, "pushdownEnabled" -> "false", "operation"-> "WRITE")))
 
     val dfWriter = mock[DataFrameWriter[Row]]
     val df = mock[DataFrame]
@@ -56,7 +56,7 @@ class CassandraWriteStageBuilderTest extends AnyFunSpec with PrivateMethodTester
   val ssl: String = "false"
   val saveMode: String = "Append"
 
-  val conf: Map[String, String] = Map("table" -> table, "keyspace" -> keyspace, "host" -> host, "username" -> username, "password" -> password, "port" -> port, "ssl" -> "false", "writeMode" -> saveMode, "pushdownEnabled" -> "true", "operation"-> "WRITE")
+  val conf: Map[String, String] = Map("storage" -> "cassandra", "table" -> table, "keyspace" -> keyspace, "host" -> host, "username" -> username, "password" -> password, "port" -> port, "ssl" -> "false", "writeMode" -> saveMode, "pushdownEnabled" -> "true", "operation"-> "WRITE")
 
   it("validate") {
     val result = CassandraWriteStageBuilder invokePrivate PrivateMethod[Boolean](Symbol("validate"))(conf)

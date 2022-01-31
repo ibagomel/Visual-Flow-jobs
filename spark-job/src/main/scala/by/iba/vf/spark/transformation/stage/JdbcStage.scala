@@ -34,7 +34,8 @@ trait JdbcStageBuilder extends StageBuilder {
     "oracle" -> "oracle.jdbc.driver.OracleDriver",
     "mysql" -> "com.mysql.cj.jdbc.Driver",
     "postgresql" -> "org.postgresql.Driver",
-    "mssql" -> "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+    "mssql" -> "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+    "redshift-jdbc" -> "com.amazon.redshift.jdbc42.Driver",
   )
 
   val jdbcStorage = "jdbc"

@@ -71,6 +71,7 @@ class ElasticReadStageBuilderTest extends AnyFunSpec with PrivateMethodTester wi
 
 
   val conf = Map(
+    "storage" -> "elastic",
     "index" -> index,
     "nodes" -> nodes,
     "port" -> port,

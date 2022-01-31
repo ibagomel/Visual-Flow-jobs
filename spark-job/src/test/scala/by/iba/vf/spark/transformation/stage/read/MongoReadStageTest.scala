@@ -76,6 +76,7 @@ class MongoReadStageBuilderTest extends AnyFunSpec with PrivateMethodTester with
 
 
   val conf = Map(
+    "storage" -> "mongo",
     "database" -> database,
     "collection" -> collection,
     "host" -> host,

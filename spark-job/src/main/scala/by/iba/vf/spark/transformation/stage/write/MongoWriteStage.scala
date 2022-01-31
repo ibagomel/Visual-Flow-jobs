@@ -40,6 +40,8 @@ private[write] class MongoWriteStage(
 }
 
 object MongoWriteStageBuilder extends WriteStageBuilder {
+    override def expectedStorage: String = MongoStageConfig.storageId
+
     override protected def validateWrite(config: Map[String, String]): Boolean = {
       MongoStageConfig.validateMongo(config)
     }

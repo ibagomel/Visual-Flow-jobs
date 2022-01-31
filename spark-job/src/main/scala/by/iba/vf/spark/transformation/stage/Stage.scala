@@ -64,16 +64,29 @@ trait StageBuilder {
 
 }
 
-trait ReadStageBuilder extends StageBuilder {
-  override protected def validate(config: Map[String, String]): Boolean =
-    config.get(fieldOperation).contains(OperationType.READ.toString) && validateRead(config)
+trait StorageValidator {
+  val fieldStorageId = "storage"
+
+  protected def expectedStorage: String = ""
+
+  protected def validateStorage(config: Map[String, String]): Boolean =
+    config.get(fieldStorageId).exists(s => expectedStorage.equals(s))
+}
+
+
+trait ReadStageBuilder extends StageBuilder with StorageValidator {
+  override protected def validate(config: Map[String, String]): Boolean = {
+    config.get(fieldOperation).contains(OperationType.READ.toString) && validateRead(config) &&
+      validateStorage(config)
+  }
 
   protected def validateRead(config: Map[String, String]): Boolean
 }
 
-trait WriteStageBuilder extends StageBuilder {
+trait WriteStageBuilder extends StageBuilder with StorageValidator {
   override protected def validate(config: Map[String, String]): Boolean =
-    config.get(fieldOperation).contains(OperationType.WRITE.toString) && validateWrite(config)
+    config.get(fieldOperation).contains(OperationType.WRITE.toString) && validateWrite(config) &&
+      validateStorage(config)
 
   protected def validateWrite(config: Map[String, String]): Boolean
 }

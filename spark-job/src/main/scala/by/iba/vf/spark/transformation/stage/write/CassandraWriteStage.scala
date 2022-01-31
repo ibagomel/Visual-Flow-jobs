@@ -42,6 +42,7 @@ class CassandraWriteStage(override val id: String,
 }
 
 object CassandraWriteStageBuilder extends WriteStageBuilder {
+  override def expectedStorage: String = CassandraStageConfig.storageId
 
   override protected def validateWrite(config: Map[String, String]): Boolean = {
     CassandraStageConfig.validateConfig(config) && config.contains(writeModeFieldName)

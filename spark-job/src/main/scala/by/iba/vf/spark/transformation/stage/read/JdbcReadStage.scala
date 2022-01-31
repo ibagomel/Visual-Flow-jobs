@@ -52,6 +52,10 @@ private[read] final class JdbcReadStage(
 
 object JdbcReadStageBuilder extends JdbcStageBuilder with ReadStageBuilder {
   final protected val fieldCustomSQL = "customSql"
+
+  override def validateStorage(config: Map[String, String]): Boolean =
+    config.get(fieldStorageId).exists(s => drivers.contains(s.toLowerCase))
+
   override protected def validateRead(config: Map[String, String]): Boolean =
     validateJdbc(config) && config.contains(fieldCustomSQL) &&
       ((!config(fieldCustomSQL).toBoolean && config.contains(fieldSchema) && config.contains(fieldTable)) ||

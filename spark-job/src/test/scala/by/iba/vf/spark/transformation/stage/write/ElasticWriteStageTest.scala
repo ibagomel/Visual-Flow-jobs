@@ -72,6 +72,7 @@ class ElasticWriteStageBuilderTest extends AnyFunSpec with PrivateMethodTester w
   val ssl: String = "true"
 
   val conf = Map(
+    "storage" -> "elastic",
     "index" -> index,
     "nodes" -> nodes,
     "port" -> port,

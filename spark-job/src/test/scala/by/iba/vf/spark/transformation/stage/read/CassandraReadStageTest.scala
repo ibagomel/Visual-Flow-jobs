@@ -24,7 +24,7 @@ class CassandraReadStageTest extends AnyFunSpec with PrivateMethodTester with Mo
     val password: String = "pwd"
     val username: String = "un"
 
-    val config = new CassandraStageConfig(Node(id, Map("table" -> table, "keyspace" -> keyspace, "host" -> host, "username" -> username, "password" -> password, "port" -> port, "ssl" -> "false", "pushdownEnabled" -> "true", "operation"-> "READ")))
+    val config = new CassandraStageConfig(Node(id, Map("storage" -> "cassandra", "table" -> table, "keyspace" -> keyspace, "host" -> host, "username" -> username, "password" -> password, "port" -> port, "ssl" -> "false", "pushdownEnabled" -> "true", "operation"-> "READ")))
 
     val dfReader = mock[DataFrameReader]
     val df = mock[DataFrame]
@@ -55,7 +55,7 @@ class CassandraReadStageBuilderTest extends AnyFunSpec with PrivateMethodTester 
   val username: String = "un"
   val ssl: String = "false"
 
-  val conf: Map[String, String] = Map("table" -> table, "keyspace" -> keyspace, "host" -> host, "username" -> username, "password" -> password, "port" -> port, "ssl" -> "false", "pushdownEnabled" -> "true", "operation"-> "READ")
+  val conf: Map[String, String] = Map("storage" -> "cassandra", "table" -> table, "keyspace" -> keyspace, "host" -> host, "username" -> username, "password" -> password, "port" -> port, "ssl" -> "false", "pushdownEnabled" -> "true", "operation"-> "READ")
 
   it("validate") {
     val result = CassandraReadStageBuilder invokePrivate PrivateMethod[Boolean](Symbol("validate"))(conf)

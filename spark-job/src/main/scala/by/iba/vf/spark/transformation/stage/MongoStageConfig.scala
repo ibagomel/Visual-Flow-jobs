@@ -49,6 +49,7 @@ class MongoStageConfig(config: Node) {
 }
 
 object MongoStageConfig {
+    val storageId = "mongo"
     private[stage] val database = "database"
     private[stage] val collection = "collection"
     private[stage] val writeMode = "writeMode"

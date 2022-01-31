@@ -20,40 +20,33 @@ package by.iba.vf.spark.transformation.stage.write
 
 import by.iba.vf.spark.transformation.config.Node
 import by.iba.vf.spark.transformation.exception.TransformationConfigurationException
-import by.iba.vf.spark.transformation.stage.RedisStageConfig._
-import by.iba.vf.spark.transformation.stage.{RedisStageConfig, Stage, StageBuilder, WriteStageBuilder}
+import by.iba.vf.spark.transformation.stage.{RedshiftStageConfig, Stage, StageBuilder, WriteStageBuilder}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-class RedisWriteStage(override val id: String,
-                      redisConfig: RedisStageConfig,
-                     ) extends WriteStage(id, RedisStageConfig.storageId) {
+class RedshiftWriteStage(override val id: String, config: RedshiftStageConfig)
+  extends WriteStage(id, RedshiftStageConfig.storageId) {
   override def write(df: DataFrame)(implicit spark: SparkSession): Unit = {
-    var options: Map[String, String] = redisConfig.provideConnectionOptions
-    options += (tableActualName -> redisConfig.table.getOrElse(throw new TransformationConfigurationException("Table name was not provided")))
-    List(
-      (keyColumnActualName, redisConfig.keyColumn),
-      (modelActualName, redisConfig.model),
-      (ttlActualName, redisConfig.ttl)
-    ).foreach {
-      case (optName, Some(opt)) => options += (optName -> opt)
-      case (_, _) =>
-    }
-    val dfWriter = getDfWriter(df, redisConfig.saveMode)
-    dfWriter.format("org.apache.spark.sql.redis").options(options).save
+    config.setUpConfigParams(spark.sparkContext)
+    var options = config.provideConnectionOptions
+    options += (RedshiftStageConfig.dbtable -> config.redshiftTable.getOrElse(
+      throw new TransformationConfigurationException("'table' parameter is missing")
+    ))
+    val dfWriter = getDfWriter(df, config.saveMode)
+    dfWriter.format("io.github.spark_redshift_community.spark.redshift").options(options).save
   }
 
-  override val builder: StageBuilder = RedisWriteStageBuilder
+  override val builder: StageBuilder = RedshiftWriteStageBuilder
 }
 
-
-object RedisWriteStageBuilder extends WriteStageBuilder {
-  override def expectedStorage: String = RedisStageConfig.storageId
+object RedshiftWriteStageBuilder extends WriteStageBuilder {
+  override def expectedStorage: String = RedshiftStageConfig.storageId
 
   override protected def validateWrite(config: Map[String, String]): Boolean = {
-    RedisStageConfig.validateConfig(config) && config.contains(tableFieldName) && config.contains(writeModeFieldName)
+    RedshiftStageConfig.validateConfig(config) &&
+      config.contains(RedshiftStageConfig.table) && config.contains(RedshiftStageConfig.writeModeFieldName)
   }
 
   override protected def convert(config: Node): Stage = {
-    new RedisWriteStage(config.id, new RedisStageConfig(config))
+    new RedshiftWriteStage(config.id, new RedshiftStageConfig(config))
   }
 }

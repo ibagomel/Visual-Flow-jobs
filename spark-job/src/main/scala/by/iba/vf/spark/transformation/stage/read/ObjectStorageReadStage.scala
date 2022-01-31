@@ -46,6 +46,8 @@ class COSReadStage(
 }
 
 object ObjectStorageReadCOSStageBuilder extends ReadStageBuilder {
+  override def expectedStorage: String = COSConfig.cosStorage
+
   override protected def validateRead(config: Map[String, String]): Boolean =
     COSConfig.validate(config)
 
@@ -54,6 +56,8 @@ object ObjectStorageReadCOSStageBuilder extends ReadStageBuilder {
 }
 
 object ObjectStorageReadS3StageBuilder extends ReadStageBuilder {
+  override def expectedStorage: String = COSConfig.s3Storage
+
   override protected def validateRead(config: Map[String, String]): Boolean =
     S3Config.validate(config)
 

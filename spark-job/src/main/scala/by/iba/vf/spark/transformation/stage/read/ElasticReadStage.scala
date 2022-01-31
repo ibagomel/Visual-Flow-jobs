@@ -33,7 +33,7 @@ private[read] final class ElasticReadStage(
                                             index: String,
                                             certDataPass: Option[(String, String, String)],
                                             elasticConfig: Map[String, String]
-                                          ) extends ReadStage(id, "elastic") {
+                                          ) extends ReadStage(id, ElasticStageConfig.storageId) {
 
   override val builder: StageBuilder = ElasticReadStageBuilder
 
@@ -49,6 +49,7 @@ private[read] final class ElasticReadStage(
 }
 
 object ElasticReadStageBuilder extends ReadStageBuilder {
+  override def expectedStorage: String = ElasticStageConfig.storageId
 
   override protected def validateRead(config: Map[String, String]): Boolean =
     ElasticStageConfig.validateElastic(config)

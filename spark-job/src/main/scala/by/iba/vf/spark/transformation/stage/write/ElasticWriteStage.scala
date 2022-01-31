@@ -35,7 +35,7 @@ private[write] class ElasticWriteStage(
     saveMode: Option[String],
     certDataPass: Option[(String, String, String)],
     elasticConfig: Map[String, String]
-) extends WriteStage(id, "elastic") {
+) extends WriteStage(id, ElasticStageConfig.storageId) {
 
   override val builder: StageBuilder = ElasticWriteStageBuilder
 
@@ -52,6 +52,8 @@ private[write] class ElasticWriteStage(
 }
 
 object ElasticWriteStageBuilder extends WriteStageBuilder {
+  override def expectedStorage: String = ElasticStageConfig.storageId
+
   override protected def validateWrite(config: Map[String, String]): Boolean =
     ElasticStageConfig.validateElastic(config)
 

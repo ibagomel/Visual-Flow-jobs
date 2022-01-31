@@ -30,6 +30,10 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
+        <repository>
+            <id>redshift</id>
+            <url>http://redshift-maven-repository.s3-website-us-east-1.amazonaws.com/release</url>
+        </repository>
     </repositories>
     <properties>
         <scala.version>2.12.12</scala.version>
@@ -250,6 +254,11 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
             <version>${log4j2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazon.redshift</groupId>
+            <artifactId>redshift-jdbc42</artifactId>
+            <version>2.1.0.2</version>
         </dependency>
     </dependencies>
 

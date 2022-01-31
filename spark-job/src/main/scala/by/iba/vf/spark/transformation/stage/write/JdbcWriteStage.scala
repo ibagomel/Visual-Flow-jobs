@@ -64,6 +64,9 @@ private[write] final class JdbcWriteStage(
 }
 
 object JdbcWriteStageBuilder extends JdbcStageBuilder with WriteStageBuilder {
+  override def validateStorage(config: Map[String, String]): Boolean =
+    config.get(fieldStorageId).exists(s => drivers.contains(s.toLowerCase))
+
   override protected def validateWrite(config: Map[String, String]): Boolean =
     validateJdbc(config)
 

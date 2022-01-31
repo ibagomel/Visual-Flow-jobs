@@ -20,7 +20,7 @@ class RedisWriteStageTest extends AnyFunSpec with PrivateMethodTester with Mocki
     val password: String = "pwd"
     val saveMode: String = "Append"
 
-    val config = new RedisStageConfig(Node(id, Map("table" -> table, "host" -> host,  "password" -> password, "port" -> port, "ssl" -> "false", "writeMode" -> saveMode, "operation" -> "WRITE")))
+    val config = new RedisStageConfig(Node(id, Map("storage" -> "redis", "table" -> table, "host" -> host,  "password" -> password, "port" -> port, "ssl" -> "false", "writeMode" -> saveMode, "operation" -> "WRITE")))
 
     val dfWriter = mock[DataFrameWriter[Row]]
     val df = mock[DataFrame]
@@ -42,7 +42,7 @@ class RedisWriteStageBuilderTest extends AnyFunSpec with PrivateMethodTester wit
   val password: String = "pwd"
   val ssl: String = "false"
 
-  val conf: Map[String, String] = Map("table" -> table, "host" -> host, "password" -> password, "port" -> port, "ssl" -> "false", "operation" -> "WRITE", "writeMode" -> "Append")
+  val conf: Map[String, String] = Map("storage" -> "redis", "table" -> table, "host" -> host, "password" -> password, "port" -> port, "ssl" -> "false", "operation" -> "WRITE", "writeMode" -> "Append")
 
   it("validate") {
     val result = RedisWriteStageBuilder invokePrivate PrivateMethod[Boolean](Symbol("validate"))(conf)

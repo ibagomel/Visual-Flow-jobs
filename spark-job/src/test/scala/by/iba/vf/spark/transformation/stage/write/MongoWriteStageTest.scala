@@ -78,6 +78,7 @@ class MongoWriteStageBuilderTest extends AnyFunSpec with PrivateMethodTester wit
 
 
   val conf = Map(
+    "storage" -> "mongo",
     "database" -> database,
     "collection" -> collection,
     "host" -> host,

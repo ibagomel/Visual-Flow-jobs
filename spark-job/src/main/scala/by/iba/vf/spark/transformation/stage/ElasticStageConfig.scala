@@ -55,6 +55,7 @@ class ElasticStageConfig(config: Node) {
 }
 
 object ElasticStageConfig {
+  val storageId = "elastic"
   private[stage] val index = "index"
   private[stage] val writeMode = "writeMode"
   private[stage] val truststorePath = "truststorePath"

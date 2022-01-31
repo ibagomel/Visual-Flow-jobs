@@ -19,11 +19,8 @@
 package by.iba.vf.spark.transformation.stage.write
 
 import by.iba.vf.spark.transformation.config.Node
-import by.iba.vf.spark.transformation.stage.OperationType
-import by.iba.vf.spark.transformation.stage.Stage
-import by.iba.vf.spark.transformation.stage.StageBuilder
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.SparkSession
+import by.iba.vf.spark.transformation.stage.{OperationType, Stage, StageBuilder}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 private[write] final class StdoutWriteStage(override val id: String)
   extends WriteStage(id, StdoutWriteStageBuilder.StdoutStorage) {

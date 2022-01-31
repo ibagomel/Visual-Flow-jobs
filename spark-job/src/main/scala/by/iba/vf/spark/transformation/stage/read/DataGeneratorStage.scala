@@ -18,15 +18,12 @@
  */
 package by.iba.vf.spark.transformation.stage.read
 
-import java.security.SecureRandom
-
 import by.iba.vf.spark.transformation.config.Node
-import by.iba.vf.spark.transformation.stage.OperationType
-import by.iba.vf.spark.transformation.stage.Stage
-import by.iba.vf.spark.transformation.stage.StageBuilder
 import by.iba.vf.spark.transformation.stage.read.JdbcReadStageBuilder.fieldStorage
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.SparkSession
+import by.iba.vf.spark.transformation.stage.{OperationType, Stage, StageBuilder}
+import org.apache.spark.sql.{DataFrame, SparkSession}
+
+import java.security.SecureRandom
 
 private[read] final class DataGeneratorStage(override val id: String, alias: String)
   extends ReadStage(id, DataGeneratorStageBuilder.GeneratorStorage) {
