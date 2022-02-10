@@ -33,10 +33,10 @@ class StdoutWriteStageTest extends AnyFunSpec with PrivateMethodTester with Mock
   it("process") {
     implicit val spark: SparkSession = mock[SparkSession]
     val df = mock[DataFrame]
-    doNothing.when(df).show(false)
+    doNothing.when(df).show(10, truncate = false)
     when(df.count()).thenReturn(1)
 
-    val stage = new StdoutWriteStage("id")
+    val stage = new StdoutWriteStage("id", 10)
 
     noException should be thrownBy stage.write(df)
   }
@@ -52,7 +52,7 @@ class StdoutWriteStageBuilderTest extends AnyFunSpec with PrivateMethodTester wi
   }
 
   it("convert") {
-    val config: Node = Node("id", Map("storage" -> OperationType.WRITE.toString))
+    val config: Node = Node("id", Map("storage" -> OperationType.WRITE.toString, "quantity" -> "20"))
 
     val result = StdoutWriteStageBuilder invokePrivate PrivateMethod[Stage]('convert)(config)
 

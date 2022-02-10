@@ -22,13 +22,13 @@ import by.iba.vf.spark.transformation.config.Node
 import by.iba.vf.spark.transformation.stage.{OperationType, Stage, StageBuilder}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-private[write] final class StdoutWriteStage(override val id: String)
+private[write] final class StdoutWriteStage(override val id: String, quantity: Int)
   extends WriteStage(id, StdoutWriteStageBuilder.StdoutStorage) {
 
   override val builder: StageBuilder = StdoutWriteStageBuilder
 
   override def write(df: DataFrame)(implicit spark: SparkSession): Unit = {
-    df.show(truncate = false)
+    df.show(quantity, truncate = false)
     printf("Total row count: %d%n", df.count())
   }
 }
@@ -36,14 +36,15 @@ private[write] final class StdoutWriteStage(override val id: String)
 object StdoutWriteStageBuilder extends StageBuilder {
   private[write] val StdoutStorage = "stdout"
   private val FieldStorage = "storage"
+  val FieldQuantity = "quantity"
 
   override protected def validate(config: Map[String, String]): Boolean =
     config.get(fieldOperation).contains(OperationType.WRITE.toString) &&
-      StdoutStorage.equals(config.get(FieldStorage).orNull.toLowerCase)
+      StdoutStorage.equals(config.get(FieldStorage).orNull.toLowerCase) &&
+      config.getOrElse(FieldQuantity, "1").forall(Character.isDigit)
 
   override protected def convert(config: Node): Stage = {
     val id = config.id
-
-    new StdoutWriteStage(id)
+    new StdoutWriteStage(id, config.value.get(FieldQuantity).map(Integer.parseInt).getOrElse(10))
   }
 }
