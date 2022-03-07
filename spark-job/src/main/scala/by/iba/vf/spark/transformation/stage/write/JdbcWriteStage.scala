@@ -19,23 +19,20 @@
 package by.iba.vf.spark.transformation.stage.write
 
 import by.iba.vf.spark.transformation.config.Node
-import by.iba.vf.spark.transformation.stage.JdbcStageBuilder
-import by.iba.vf.spark.transformation.stage.Stage
-import by.iba.vf.spark.transformation.stage.StageBuilder
-import by.iba.vf.spark.transformation.stage.WriteStageBuilder
+import by.iba.vf.spark.transformation.exception.TransformationConfigurationException
+import by.iba.vf.spark.transformation.stage.{JdbcStageBuilder, Stage, StageBuilder, WriteStageBuilder}
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.execution.datasources.jdbc.JDBCOptions
-import org.apache.spark.sql.types.StringType
-import org.apache.spark.sql.types.StructField
+import org.apache.spark.sql.types.{StringType, StructField}
+import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 private[write] final class JdbcWriteStage(
     override val id: String,
     schemaTable: String,
     truststorePath: Option[String],
     saveMode: Option[String],
-    jdbcConfig: Map[String, String]
+    jdbcConfig: Map[String, String],
+    truncateMode: TruncateMode.Value
 ) extends WriteStage(id, JdbcWriteStageBuilder.jdbcStorage) {
 
   override val builder: StageBuilder = JdbcWriteStageBuilder
@@ -59,11 +56,26 @@ private[write] final class JdbcWriteStage(
       alteredTypes.map(fields => Map("createTableColumnTypes" -> fields)).getOrElse(Map.empty)
 
     val dfWriter = getDfWriter(df, saveMode)
-    dfWriter.format(JdbcWriteStageBuilder.jdbcStorage).options(config).save()
+    dfWriter.format(JdbcWriteStageBuilder.jdbcStorage).options(applyTruncateConfiguration(config)).save()
+  }
+
+  def applyTruncateConfiguration(config: Map[String, String]): Map[String, String] = {
+    if (!saveMode.contains(SaveMode.Overwrite.toString)) {
+      return config
+    }
+    truncateMode match {
+      case TruncateMode.None => config
+      case TruncateMode.Simple => config + ("truncate" -> "true")
+      case TruncateMode.Cascade => config ++ List("truncate" -> "true", "cascadeTruncate" -> "true")
+      case _ => throw new TransformationConfigurationException(s"Given truncate mode ${truncateMode.toString} is not supported")
+    }
   }
 }
 
 object JdbcWriteStageBuilder extends JdbcStageBuilder with WriteStageBuilder {
+
+  val fieldTruncateMode = "truncateMode"
+
   override def validateStorage(config: Map[String, String]): Boolean =
     config.get(fieldStorageId).exists(s => drivers.contains(s.toLowerCase))
 
@@ -74,6 +86,17 @@ object JdbcWriteStageBuilder extends JdbcStageBuilder with WriteStageBuilder {
     val (schemaTable, map) = jdbcParams(config)
     val truststorePathOption = if (config.value.contains(fieldCertData)) Some(truststorePath) else None
     val saveMode = config.value.get(fieldWriteMode)
-    new JdbcWriteStage(config.id, schemaTable, truststorePathOption, saveMode, map)
+    if (config.value.contains(fieldTruncateMode) && !TruncateMode.isKnownMode(config.value(fieldTruncateMode))) {
+      throw new TransformationConfigurationException(s"Given truncate mode ${config.value(fieldTruncateMode)} is not supported")
+    }
+    val truncateMode = if (config.value.contains(fieldTruncateMode))
+      TruncateMode.withName(config.value(fieldTruncateMode)) else TruncateMode.None
+    new JdbcWriteStage(config.id, schemaTable, truststorePathOption, saveMode, map, truncateMode)
   }
+}
+
+object TruncateMode extends Enumeration {
+  val None, Simple, Cascade = Value
+
+  def isKnownMode(givenMode: String): Boolean = values.exists(mode => mode.toString == givenMode)
 }

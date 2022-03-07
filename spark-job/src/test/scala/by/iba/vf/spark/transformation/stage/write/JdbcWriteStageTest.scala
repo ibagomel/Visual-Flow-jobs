@@ -73,7 +73,7 @@ class JdbcWriteStageTest extends AnyFunSpec with PrivateMethodTester with Mockit
 
     doNothing.when(context).addFile("jdbc-source-truststore.jks")
 
-    val stage = new JdbcWriteStage(id, schemaTable, Some("jdbc-source-truststore.jks"), Some("overwrite"), config)
+    val stage = new JdbcWriteStage(id, schemaTable, Some("jdbc-source-truststore.jks"), Some("overwrite"), config, TruncateMode.Simple)
     stage.write(df)
   }
 }
@@ -102,7 +102,9 @@ class JdbcWriteStageBuilderTest extends AnyFunSpec with PrivateMethodTester with
         "user" -> "test",
         "password" -> "test",
         "schema" -> "SCHEMA",
-        "table" -> "TABLE"
+        "table" -> "TABLE",
+        "truncateMode" -> "Simple",
+        "writeMode" -> "Overwrite"
       )
     )
 
