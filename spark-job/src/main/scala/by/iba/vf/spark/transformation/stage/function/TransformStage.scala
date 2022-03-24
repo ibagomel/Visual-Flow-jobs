@@ -19,13 +19,11 @@
 package by.iba.vf.spark.transformation.stage.function
 
 import by.iba.vf.spark.transformation.config.Node
-import by.iba.vf.spark.transformation.stage.OperationType
-import by.iba.vf.spark.transformation.stage.Stage
-import by.iba.vf.spark.transformation.stage.StageBuilder
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.SparkSession
+import by.iba.vf.spark.transformation.exception.TransformationConfigurationException
+import by.iba.vf.spark.transformation.stage.{OperationType, Stage, StageBuilder}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
-private[function] final class TransformStage(val id: String, selectStmt: String) extends Stage {
+private[function] final class TransformStage(val id: String, selectStmt: String, mode: TransformationMode.Value, tableName: Option[String]) extends Stage {
   override val operation: OperationType.Value = OperationType.TRANSFORM
   override val inputsRequired: Int = 1
   override val builder: StageBuilder = TransformStageBuilder
@@ -34,20 +32,47 @@ private[function] final class TransformStage(val id: String, selectStmt: String)
     input.values.headOption.map(transform(_, spark))
 
   def transform(df: DataFrame, spark: SparkSession): DataFrame = {
-    val tmpTable = "tmpTable"
-    val sql = s"select $selectStmt from $tmpTable"
+    val (tblName, query) = (mode, tableName) match {
+      case (TransformationMode.Simple, _) => ("tmpTable", s"select $selectStmt from tmpTable")
+      case (TransformationMode.Full_SQL, Some(name)) => (name, selectStmt)
+      case (_, _) => throw new TransformationConfigurationException(s"Cannot process given transformation mode($mode) and table name($tableName)")
+    }
 
-    df.createOrReplaceTempView(tmpTable)
-    spark.sql(sql)
+    df.createOrReplaceTempView(tblName)
+    spark.sql(query)
   }
 }
 
 object TransformStageBuilder extends StageBuilder {
   private val FieldStatement = "statement"
+  private val FieldMode = "mode"
+  private val FieldTableName = "tableName"
 
-  override protected def validate(config: Map[String, String]): Boolean =
-    config.get(fieldOperation).contains(OperationType.TRANSFORM.toString) && config.contains(FieldStatement)
+  override protected def validate(config: Map[String, String]): Boolean = {
+    if (!(config.get(fieldOperation).contains(OperationType.TRANSFORM.toString) && config.contains(FieldStatement))) {
+      return false
+    }
+    if (!config.contains(FieldMode)) {
+      return true
+    }
+    TransformationMode.isKnownMode(config(FieldMode)) &&
+      (
+        (config(FieldMode) == TransformationMode.Simple.toString) ||
+        (config(FieldMode) == TransformationMode.Full_SQL.toString && config.contains(FieldTableName))
+      )
+  }
 
   override protected def convert(config: Node): Stage =
-    new TransformStage(config.id, config.value(FieldStatement))
+    new TransformStage(
+      config.id,
+      config.value(FieldStatement),
+      config.value.get(FieldMode).map(mode => TransformationMode.withName(mode)).getOrElse(TransformationMode.Simple),
+      config.value.get(FieldTableName)
+    )
+}
+
+object TransformationMode extends Enumeration {
+  val Simple, Full_SQL = Value
+
+  def isKnownMode(givenMode: String): Boolean = values.exists(value => value.toString == givenMode)
 }

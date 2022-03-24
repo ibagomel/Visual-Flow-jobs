@@ -19,10 +19,8 @@
 package by.iba.vf.spark.transformation.stage.function
 
 import by.iba.vf.spark.transformation.config.Node
-import by.iba.vf.spark.transformation.stage.OperationType
-import by.iba.vf.spark.transformation.stage.Stage
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.SparkSession
+import by.iba.vf.spark.transformation.stage.{OperationType, Stage}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.PrivateMethodTester
 import org.scalatest.funspec.AnyFunSpec
@@ -38,7 +36,25 @@ class TransformStageTest extends AnyFunSpec with MockitoSugar with PrivateMethod
     val selectStmt = "a+b,c as d"
 
     when(spark.sql(s"select $selectStmt from tmpTable")).thenReturn(df2)
-    val stage = new TransformStage("id", selectStmt)
+    val stage = new TransformStage("id", selectStmt, TransformationMode.Simple, None)
+
+    val result = stage invokePrivate PrivateMethod[Option[DataFrame]]('process)(Map("1" -> df), spark)
+
+    result should be(Some(df2))
+  }
+
+  it("processFullSql") {
+    implicit lazy val spark: SparkSession = mock[SparkSession]
+    val df = mock[DataFrame]
+    val df2 = mock[DataFrame]
+    val tableName = "testTable"
+
+    doNothing.when(df).createOrReplaceTempView(tableName)
+
+    val selectStmt = "select * from testTable order by id"
+
+    when(spark.sql(selectStmt)).thenReturn(df2)
+    val stage = new TransformStage("id", selectStmt, TransformationMode.Full_SQL, Some(tableName))
 
     val result = stage invokePrivate PrivateMethod[Option[DataFrame]]('process)(Map("1" -> df), spark)
 
@@ -49,6 +65,15 @@ class TransformStageTest extends AnyFunSpec with MockitoSugar with PrivateMethod
 class TransformStageBuilderTest extends AnyFunSpec with PrivateMethodTester {
   it("validate") {
     val config: Map[String, String] = Map("operation" -> OperationType.TRANSFORM.toString, "statement" -> "testing")
+    val configSimple: Map[String, String] = Map("operation" -> OperationType.TRANSFORM.toString, "statement" -> "testing", "mode" -> TransformationMode.Simple.toString)
+
+    val result = TransformStageBuilder invokePrivate PrivateMethod[Boolean]('validate)(config)
+    result should be(true)
+    TransformStageBuilder invokePrivate PrivateMethod[Boolean]('validate)(configSimple) should be(true)
+  }
+
+  it("validateFullSql") {
+    val config: Map[String, String] = Map("operation" -> OperationType.TRANSFORM.toString, "statement" -> "testing", "mode" -> TransformationMode.Full_SQL.toString, "tableName" -> "test")
 
     val result = TransformStageBuilder invokePrivate PrivateMethod[Boolean]('validate)(config)
     result should be(true)
@@ -56,6 +81,14 @@ class TransformStageBuilderTest extends AnyFunSpec with PrivateMethodTester {
 
   it("convert") {
     val config: Node = Node("id", Map("operation" -> OperationType.TRANSFORM.toString, "statement" -> "testing"))
+
+    val result = TransformStageBuilder invokePrivate PrivateMethod[Stage]('convert)(config)
+
+    result.getClass should be(classOf[TransformStage])
+  }
+
+  it("convertFullSql") {
+    val config: Node = Node("id", Map("operation" -> OperationType.TRANSFORM.toString, "statement" -> "testing", "mode" -> TransformationMode.Full_SQL.toString, "tableName" -> "test"))
 
     val result = TransformStageBuilder invokePrivate PrivateMethod[Stage]('convert)(config)
 
