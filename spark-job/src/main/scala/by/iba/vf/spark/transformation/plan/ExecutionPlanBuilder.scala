@@ -31,6 +31,7 @@ import by.iba.vf.spark.transformation.stage.function.FilterStageBuilder
 import by.iba.vf.spark.transformation.stage.function.GroupByStageBuilder
 import by.iba.vf.spark.transformation.stage.function.JoinStageBuilder
 import by.iba.vf.spark.transformation.stage.function.RemoveDuplicatesStageBuilder
+import by.iba.vf.spark.transformation.stage.function.SortStageBuilder
 import by.iba.vf.spark.transformation.stage.function.TransformStageBuilder
 import by.iba.vf.spark.transformation.stage.function.UnionStageBuilder
 import by.iba.vf.spark.transformation.stage.read.{CassandraReadStageBuilder, MongoReadStageBuilder, DataGeneratorStageBuilder, ElasticReadStageBuilder, JdbcReadStageBuilder, ObjectStorageReadCOSStageBuilder, ObjectStorageReadS3StageBuilder, RedisReadStageBuilder}
@@ -63,7 +64,8 @@ object ExecutionPlanBuilder {
       JoinStageBuilder,
       UnionStageBuilder,
       ChangeDataCaptureStageBuilder,
-      RemoveDuplicatesStageBuilder
+      RemoveDuplicatesStageBuilder,
+      SortStageBuilder
     )
 
   def buildExecutionPlan(pc: ProcessConfiguration): ExecutionPlan = {
